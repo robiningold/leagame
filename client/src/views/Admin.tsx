@@ -123,13 +123,23 @@ function AdminPanel({ pin, onLogout }: { pin: string; onLogout: () => void }) {
 
         <div className="grid2">
           <div className="panel">
-            <h2>Punkte</h2>
+            <h2>Teams &amp; Punkte</h2>
             {view.teams.map((t) => (
               <div key={t.id} className="row" style={{ marginBottom: 8 }}>
                 <span style={{ flex: 1, fontSize: 22 }}>
                   <span className="dot" style={{ background: t.farbe }} />
                   {t.name}: <b>{t.score}</b>
                 </span>
+                <button
+                  className="btn small ghost"
+                  title="Teamnamen ändern"
+                  onClick={() => {
+                    const name = window.prompt('Neuer Teamname:', t.name);
+                    if (name && name.trim()) run('renameTeam', { teamId: t.id, name });
+                  }}
+                >
+                  ✏️
+                </button>
                 {[-100, -50, 50, 100].map((d) => (
                   <button key={d} className="btn small ghost" onClick={() => run('adjustScore', { teamId: t.id, delta: d })}>
                     {d > 0 ? '+' : ''}

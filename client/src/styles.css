@@ -45,6 +45,10 @@ select {
   font-family: inherit;
 }
 
+a {
+  text-decoration: none;
+}
+
 /* ---------- Hintergrund ---------- */
 .bg {
   position: fixed;

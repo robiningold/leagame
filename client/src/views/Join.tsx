@@ -83,7 +83,7 @@ export default function Join() {
         ) : (
           <>
             <TopBar view={view} />
-            {view.phase === 'lobby' && <LobbyWait view={view} wakeLockSupported={wakeLockSupported} />}
+            {view.phase === 'lobby' && <LobbyWait view={view} wakeLockSupported={wakeLockSupported} run={run} />}
             {view.phase === 'board' && !view.round && <BoardTurn view={view} run={run} />}
             {view.phase === 'board' && view.round && <PlayerRound view={view} round={view.round} run={run} />}
             {view.phase === 'final' && <FinalPhone view={view} />}
@@ -169,7 +169,7 @@ function JoinForm({ view, pinParam, onJoined }: { view: View; pinParam: string; 
   );
 }
 
-function LobbyWait({ view, wakeLockSupported }: { view: View; wakeLockSupported: boolean }) {
+function LobbyWait({ view, wakeLockSupported, run }: { view: View; wakeLockSupported: boolean; run: (t: string, p?: any) => any }) {
   const me = view.me!;
   const team = teamOf(view, me.teamId);
   return (
@@ -188,6 +188,15 @@ function LobbyWait({ view, wakeLockSupported }: { view: View; wakeLockSupported:
             </span>
           ))}
       </div>
+      <button
+        className="btn ghost"
+        onClick={() => {
+          const name = window.prompt('Neuer Teamname:', team?.name || '');
+          if (name && name.trim()) run('renameTeam', { teamId: me.teamId, name });
+        }}
+      >
+        ✏️ Teamnamen ändern
+      </button>
       <p className="muted">Warte, bis die Spielleitung das Spiel startet.</p>
       {!wakeLockSupported && <div className="hint">Tipp: Stell die automatische Bildschirmsperre für heute Abend aus, dann bleibst du immer verbunden.</div>}
     </div>

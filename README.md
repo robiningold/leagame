@@ -110,6 +110,20 @@ npm run import
 
 Die alte `content.json` wird als `content.json.bak` gesichert. Bei Fehlern wird nichts überschrieben.
 
+## Admin-PIN festlegen
+
+- **Auf Vercel:** Im Vercel-Projekt unter **Settings → Environment Variables** die Variable `ADMIN_PIN` anlegen oder bearbeiten (für Production, Preview und Development). Danach unter **Deployments** beim neuesten Deploy **⋯ → Redeploy** klicken. Erst dann gilt die neue PIN, denn Vercel übernimmt geänderte Variablen nur bei einem neuen Deploy.
+- **Lokal:** In `config.json` das Feld `adminPin` ändern und neu starten.
+- Ist `ADMIN_PIN` gesetzt, gilt diese PIN, und `adminPin` in `config.json` wird ignoriert.
+
+## Teamnamen
+
+Die Teams starten mit den Namen aus `config.json`. Danach können sie selbst einen Namen wählen:
+- **Auf dem Handy:** In der Lobby (vor dem Spielstart) kann jede Person mit „✏️ Teamnamen ändern“ den Namen des eigenen Teams ändern.
+- **Spielleitung:** In `/admin` unter „Teams & Punkte“ mit ✏️ jederzeit, auch während des Spiels.
+
+Die Farben kommen weiterhin aus `config.json`. Bei „Neues Spiel“ gelten wieder die Namen aus `config.json`.
+
 ## config.json
 
 | Feld | Bedeutung |
@@ -117,7 +131,7 @@ Die alte `content.json` wird als `content.json.bak` gesichert. Bei Fehlern wird 
 | `spieltitel` | Titel auf TV und Handys |
 | `geburtstagskind` | Name, z.B. für „Wer kennt Lea?“ und `{name}` |
 | `adminPin` | PIN für `/admin`. Auf Vercel stattdessen `ADMIN_PIN` setzen. |
-| `teams` | 2 bis 4 Teams mit `name` und `farbe` |
+| `teams` | 2 bis 4 Teams mit `name` (Startname, im Spiel änderbar) und `farbe` |
 | `rundendauerSekunden` | Timer pro Runde (Standard 60) |
 | `klauen` | Klauen an (`true`) oder aus (`false`) |
 | `klauenDauerSekunden` | Zeit fürs Klauen (Standard 10) |
