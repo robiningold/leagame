@@ -21,10 +21,11 @@ interface Suggestion {
   id: string;
   col: string;
   mode: Mode;
-  value: number;
+  value: number | null;
   von: string;
   entry: Entry;
   at: number;
+  status?: 'offen' | 'angenommen' | 'abgelehnt';
 }
 interface Def {
   rev: number;
@@ -111,6 +112,15 @@ export default function Editor({ pin, view }: { pin: string; view: View }) {
   };
   useEffect(() => () => clearTimeout(timer.current), []);
   useEffect(() => {
+    const t = window.setInterval(() => {
+      fetch(`/api/game?def=1&pin=${encodeURIComponent(pin)}`, { cache: 'no-store' })
+        .then((r) => r.json())
+        .then((d) => d.suggestions && setSuggestions(d.suggestions))
+        .catch(() => {});
+    }, 15000);
+    return () => clearInterval(t);
+  }, [pin]);
+  useEffect(() => {
     const warn = (e: BeforeUnloadEvent) => {
       if (status === 'dirty' || status === 'saving') e.preventDefault();
     };
@@ -122,6 +132,15 @@ export default function Editor({ pin, view }: { pin: string; view: View }) {
     if (!confirm('Vorschlag löschen?')) return;
     try {
       const res = await postAction({ role: 'admin', pin }, 'deleteSuggestion', { id });
+      setSuggestions(res.suggestions);
+    } catch (e: any) {
+      setErr(e.message);
+    }
+  };
+  const reviewSuggestion: Review = async (id, patch) => {
+    setSuggestions((l) => l.map((x) => (x.id === id ? { ...x, ...patch } : x)));
+    try {
+      const res = await postAction({ role: 'admin', pin }, 'reviewSuggestion', { id, ...patch });
       setSuggestions(res.suggestions);
     } catch (e: any) {
       setErr(e.message);
@@ -215,6 +234,8 @@ export default function Editor({ pin, view }: { pin: string; view: View }) {
         {started && <div className="hint">Das Spiel läuft: Neue Inhalte gelten ab dem nächsten Feld. Neue Felder sind sofort spielbar.</div>}
       </div>
 
+      <SuggestionsPanel pin={pin} def={def} suggestions={suggestions} bday={view.bdayName} onDelete={deleteSuggestion} onReview={reviewSuggestion} onRefresh={refreshSuggestions} open={def.settings.vorschlaegeOffen !== false} setOpen={(v) => update((d) => (v ? delete d.settings.vorschlaegeOffen : (d.settings.vorschlaegeOffen = false)))} />
+
       <Settings def={def} defaults={defaults} update={update} pin={pin} />
 
       <div className="panel">
@@ -287,8 +308,11 @@ export default function Editor({ pin, view }: { pin: string; view: View }) {
           mode={selCol.mode}
           title={`${selCol.title.replace('{name}', view.bdayName)} · ${sel.value}`}
           entries={list(sel.col, sel.value)}
-          suggestions={suggestions.filter((x) => x.col === sel.col && x.value === sel.value)}
+          suggestions={suggestions.filter((x) => x.status === 'angenommen' && x.col === sel.col && (x.value == null || x.value === sel.value))}
           onDeleteSuggestion={deleteSuggestion}
+          onReview={reviewSuggestion}
+          def={def}
+          bday={view.bdayName}
           color={modes[selCol.mode].color}
           rule={modes[selCol.mode].rule}
           onChange={(fn) =>
@@ -300,8 +324,6 @@ export default function Editor({ pin, view }: { pin: string; view: View }) {
           onClose={() => setSel(null)}
         />
       )}
-
-      <SuggestionsPanel pin={pin} def={def} suggestions={suggestions} bday={view.bdayName} onDelete={deleteSuggestion} onRefresh={refreshSuggestions} open={def.settings.vorschlaegeOffen !== false} setOpen={(v) => update((d) => (v ? delete d.settings.vorschlaegeOffen : (d.settings.vorschlaegeOffen = false)))} />
 
       <div className="panel dark">
         <h2>Sicherung</h2>
@@ -354,7 +376,7 @@ function RowCells({ v, def, sel, setSel, changeValue, removeRow, canRemove, extr
       {def.columns.map((c: Def['columns'][number]) => {
         const items: Entry[] = def.entries[c.id]?.[String(v)] || [];
         const valid = items.filter((e) => entryValid(c.mode, e));
-        const sugg = (suggestions as Suggestion[]).filter((x) => x.col === c.id && x.value === v);
+        const sugg = (suggestions as Suggestion[]).filter((x) => x.status === 'angenommen' && x.col === c.id && (x.value == null || x.value === v));
         const isSel = sel?.col === c.id && sel?.value === v;
         return (
           <button key={c.id} className={`ed-cell ${valid.length || sugg.length ? '' : 'empty'} ${isSel ? 'sel' : ''}`} onClick={() => setSel(isSel ? null : { col: c.id, value: v })}>
@@ -444,7 +466,7 @@ function Settings({ def, defaults, update, pin }: { def: Def; defaults: Record<s
 }
 
 // ---------------------------------------------------------------- Feld-Inhalte
-function CellEditor({ pin, mode, title, entries, suggestions, onDeleteSuggestion, color, rule, onChange, onClose }: { pin: string; mode: Mode; title: string; entries: Entry[]; suggestions: Suggestion[]; onDeleteSuggestion: (id: string) => void; color: string; rule: string; onChange: (fn: (list: Entry[]) => void) => void; onClose: () => void }) {
+function CellEditor({ pin, mode, title, entries, suggestions, onDeleteSuggestion, onReview, def, bday, color, rule, onChange, onClose }: { pin: string; mode: Mode; title: string; entries: Entry[]; suggestions: Suggestion[]; onDeleteSuggestion: (id: string) => void; onReview: Review; def: Def; bday: string; color: string; rule: string; onChange: (fn: (list: Entry[]) => void) => void; onClose: () => void }) {
   return (
     <div className="panel" style={{ borderTop: `8px solid ${color}` }}>
       <div className="row" style={{ justifyContent: 'space-between' }}>
@@ -474,11 +496,11 @@ function CellEditor({ pin, mode, title, entries, suggestions, onDeleteSuggestion
       </div>
       {suggestions.length > 0 && (
         <>
-          <h3 style={{ marginBottom: 6 }}>💡 Vorschläge von Gästen ({suggestions.length})</h3>
+          <h3 style={{ marginBottom: 6 }}>💡 Angenommene Vorschläge, die hier gezogen werden können ({suggestions.length})</h3>
           <p className="muted" style={{ fontSize: 14, marginTop: 0 }}>Werden mitgezogen, aber nie beim Team der Person, die sie eingereicht hat.</p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 12 }}>
             {suggestions.map((x) => (
-              <SuggestionCard key={x.id} s={x} pin={pin} onDelete={() => onDeleteSuggestion(x.id)} />
+              <SuggestionCard key={x.id} s={x} pin={pin} def={def} bday={bday} onDelete={() => onDeleteSuggestion(x.id)} onReview={onReview} />
             ))}
           </div>
         </>
@@ -487,17 +509,23 @@ function CellEditor({ pin, mode, title, entries, suggestions, onDeleteSuggestion
   );
 }
 
-function SuggestionCard({ s, pin, onDelete, where }: { s: Suggestion; pin: string; onDelete: () => void; where?: string }) {
+type Review = (id: string, patch: { status?: Suggestion['status']; value?: number | null }) => void;
+
+function SuggestionCard({ s, pin, def, bday, onDelete, onReview }: { s: Suggestion; pin: string; def: Def; bday: string; onDelete: () => void; onReview: Review }) {
   const e = s.entry;
+  const col = def.columns.find((c) => c.id === s.col);
+  const status = s.status || 'offen';
   return (
-    <div className="entry-card">
+    <div className="entry-card" style={{ outline: status === 'angenommen' ? '3px solid #3DDC84' : status === 'abgelehnt' ? '3px solid rgba(255,77,94,.7)' : undefined, opacity: status === 'abgelehnt' ? 0.7 : 1 }}>
       <div className="row" style={{ justifyContent: 'space-between' }}>
-        <b>💡 von {s.von}</b>
-        <button className="btn small red" onClick={onDelete}>
-          Löschen
-        </button>
+        <b style={{ fontSize: 18 }}>💡 von {s.von}</b>
+        <span className="muted" style={{ fontSize: 13 }}>
+          {new Date(s.at).toLocaleString('de-CH', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
+        </span>
       </div>
-      {where && <div className="muted" style={{ fontSize: 14 }}>{where}</div>}
+      <div className="muted" style={{ fontSize: 14 }}>
+        {col ? col.title.replace('{name}', bday) : '⚠️ Spalte gibt es nicht mehr – wird nicht gespielt'}
+      </div>
       {s.mode === 'quiz' ? (
         <>
           <div style={{ fontWeight: 800 }}>{e.frage}</div>
@@ -522,32 +550,50 @@ function SuggestionCard({ s, pin, onDelete, where }: { s: Suggestion; pin: strin
           {e.verboten?.length ? <div className="muted">Verboten: {e.verboten.join(', ')}</div> : null}
         </>
       )}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+        <button className={`btn small ${status === 'angenommen' ? 'green' : 'ghost'}`} style={{ minHeight: 48, fontSize: 18 }} onClick={() => onReview(s.id, { status: status === 'angenommen' ? 'offen' : 'angenommen' })}>
+          👍 {status === 'angenommen' ? 'Angenommen' : 'Annehmen'}
+        </button>
+        <button className={`btn small ${status === 'abgelehnt' ? 'red' : 'ghost'}`} style={{ minHeight: 48, fontSize: 18 }} onClick={() => onReview(s.id, { status: status === 'abgelehnt' ? 'offen' : 'abgelehnt' })}>
+          👎 {status === 'abgelehnt' ? 'Abgelehnt' : 'Ablehnen'}
+        </button>
+      </div>
+      <div className="row" style={{ justifyContent: 'space-between' }}>
+        <label style={{ display: 'flex', alignItems: 'center', gap: 6, textTransform: 'none', fontSize: 14 }}>
+          Punkte:
+          <select value={s.value == null ? '' : String(s.value)} onChange={(ev) => onReview(s.id, { value: ev.target.value ? Number(ev.target.value) : null })} style={{ fontSize: 14, borderRadius: 8, padding: '4px 6px' }}>
+            <option value="">alle Felder der Spalte</option>
+            {def.values.map((v) => (
+              <option key={v} value={v}>
+                nur {v}
+              </option>
+            ))}
+          </select>
+        </label>
+        <button className="btn small ghost" onClick={onDelete} title="Ganz löschen">
+          🗑️
+        </button>
+      </div>
     </div>
   );
 }
 
-function SuggestionsPanel({ pin, def, suggestions, bday, onDelete, onRefresh, open, setOpen }: { pin: string; def: Def; suggestions: Suggestion[]; bday: string; onDelete: (id: string) => void; onRefresh: () => void; open: boolean; setOpen: (v: boolean) => void }) {
-  const [show, setShow] = useState(false);
+function SuggestionsPanel({ pin, def, suggestions, bday, onDelete, onReview, onRefresh, open, setOpen }: { pin: string; def: Def; suggestions: Suggestion[]; bday: string; onDelete: (id: string) => void; onReview: Review; onRefresh: () => void; open: boolean; setOpen: (v: boolean) => void }) {
+  const [filter, setFilter] = useState<'offen' | 'angenommen' | 'abgelehnt'>('offen');
   const url = `${location.origin}/vorschlag`;
-  const where = (x: Suggestion) => {
-    const c = def.columns.find((c) => c.id === x.col);
-    if (!c || !def.values.includes(x.value)) return '⚠️ Spalte oder Zeile gibt es nicht mehr – wird nicht gespielt';
-    return `${c.title.replace('{name}', bday)} · ${x.value}`;
-  };
+  const count = (st: string) => suggestions.filter((x) => (x.status || 'offen') === st).length;
+  const shown = suggestions.filter((x) => (x.status || 'offen') === filter);
   return (
-    <div className="panel">
+    <div className="panel" style={count('offen') ? { boxShadow: '0 0 0 4px #FFCB2D, 0 12px 30px rgba(20,10,70,.35)' } : undefined}>
       <div className="row" style={{ justifyContent: 'space-between' }}>
-        <h2 style={{ margin: 0 }}>💡 Vorschläge von Gästen ({suggestions.length})</h2>
-        <div className="row">
-          <button className="btn small ghost" onClick={onRefresh}>
-            ↻ Aktualisieren
-          </button>
-          <button className="btn small ghost" onClick={() => setShow(!show)}>
-            {show ? '▲ Liste zuklappen' : '▼ Alle anzeigen'}
-          </button>
-        </div>
+        <h2 style={{ margin: 0 }}>
+          💡 Vorschläge von Gästen {count('offen') > 0 && <span className="badge" style={{ background: '#FFCB2D', color: '#2A1E5C' }}>{count('offen')} neu</span>}
+        </h2>
+        <button className="btn small ghost" onClick={onRefresh}>
+          ↻ Aktualisieren
+        </button>
       </div>
-      <p style={{ fontSize: 16 }}>
+      <p style={{ fontSize: 16, margin: '10px 0' }}>
         Link für Gäste: <b style={{ userSelect: 'all' }}>{url}</b>{' '}
         <button className="btn small ghost" onClick={() => navigator.clipboard?.writeText(url)}>
           Kopieren
@@ -555,19 +601,24 @@ function SuggestionsPanel({ pin, def, suggestions, bday, onDelete, onRefresh, op
       </p>
       <label style={{ display: 'flex', gap: 8, alignItems: 'center', fontWeight: 800 }}>
         <input type="checkbox" checked={open} onChange={(e) => setOpen(e.target.checked)} style={{ width: 22, height: 22 }} />
-        Vorschläge annehmen
+        Neue Vorschläge annehmen (Seite offen)
       </label>
       <p className="muted" style={{ fontSize: 14 }}>
-        Vorschläge kommen direkt ins Spiel, aber nie beim Team der Person, die sie eingereicht hat (erkannt am Namen). Im Brett zeigt 💡 die Anzahl pro Feld.
+        Nur 👍 angenommene Vorschläge kommen ins Spiel. Ohne festen Punktwert kann ein Vorschlag in jedem Feld seiner Spalte gezogen werden, aber nur einmal pro Spiel. Er kommt nie beim Team der Person dran, die ihn eingereicht hat.
       </p>
-      {show && (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 12 }}>
-          {suggestions.length === 0 && <p>Noch keine Vorschläge.</p>}
-          {suggestions.map((x) => (
-            <SuggestionCard key={x.id} s={x} pin={pin} onDelete={() => onDelete(x.id)} where={where(x)} />
-          ))}
-        </div>
-      )}
+      <div className="tabs" style={{ marginBottom: 12 }}>
+        {(['offen', 'angenommen', 'abgelehnt'] as const).map((f) => (
+          <button key={f} className={filter === f ? 'sel' : ''} onClick={() => setFilter(f)}>
+            {f === 'offen' ? '🕓 Offen' : f === 'angenommen' ? '👍 Angenommen' : '👎 Abgelehnt'} ({count(f)})
+          </button>
+        ))}
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 12 }}>
+        {shown.length === 0 && <p className="muted">Keine Vorschläge in dieser Liste.</p>}
+        {shown.map((x) => (
+          <SuggestionCard key={x.id} s={x} pin={pin} def={def} bday={bday} onDelete={() => onDelete(x.id)} onReview={onReview} />
+        ))}
+      </div>
     </div>
   );
 }

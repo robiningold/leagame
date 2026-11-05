@@ -83,13 +83,13 @@ Der Tab **„🎮 Live-Steuerung“** ist für den Abend: Spiel starten, Geburts
 
 ## Vorschläge von Gästen
 
-Unter **`/vorschlag`** können Gäste schon vor dem Spiel Begriffe, Songs, Bilder und Quizfragen einreichen. Den Link findest du im Admin-Tool unter „💡 Vorschläge von Gästen“, auf der Startseite und in der Lobby auf dem Handy.
+Unter **`/vorschlag`** können Gäste schon vor dem Spiel Begriffe, Songs, Bilder und Quizfragen einreichen, so viele sie wollen. Den Link findest du im Admin-Tool, auf der Startseite und in der Lobby auf dem Handy.
 
-- Man gibt den eigenen Namen ein, wählt Kategorie und Schwierigkeit und füllt die passenden Felder aus.
-- Vorschläge kommen direkt ins Spiel und werden wie normale Einträge zufällig gezogen.
-- **Fairness:** Ein Vorschlag kommt nie beim Team der Person dran, die ihn eingereicht hat. Wenn möglich auch nicht beim Team, das gerade klauen dürfte (bei nur 2 Teams wäre der Vorschlag sonst nie spielbar). Erkannt wird das am Namen, darum sollen Gäste denselben Namen wie beim Mitspielen eingeben. Gross/Klein und Leerzeichen sind egal.
-- Gibt es für ein Feld nur Vorschläge aus dem Team, das dran ist, meldet das Spiel das und man wählt ein anderes Feld.
-- Im Admin-Tool siehst du alle Vorschläge mit Namen, kannst sie löschen und die Seite mit „Vorschläge annehmen“ schliessen. Im Brett zeigt 💡 die Anzahl pro Feld.
+- Gäste geben ihren Namen ein, wählen eine Kategorie (Spalte) und füllen die passenden Felder aus. Punkte wählen sie nicht.
+- **Freigabe:** Neue Vorschläge sind zuerst „offen“ und noch **nicht** im Spiel. Im Admin-Tool (ganz oben unter „💡 Vorschläge von Gästen“) gibst du 👍 oder 👎. Du siehst bei jedem Vorschlag, von wem er kommt, und kannst die Person bei Bedarf direkt fragen.
+- Angenommene Vorschläge können in **jedem Feld ihrer Spalte** gezogen werden, aber nur einmal pro Spiel. Wer will, legt pro Vorschlag einen festen Punktwert fest („nur 300“).
+- **Fairness:** Ein Vorschlag kommt nie beim Team der Person dran, die ihn eingereicht hat. Wenn möglich auch nicht beim Team, das gerade klauen dürfte (bei nur 2 Teams wäre er sonst nie spielbar). Erkannt wird das am Namen, darum sollen Gäste denselben Namen wie beim Mitspielen eingeben (Gross/Klein und Leerzeichen sind egal).
+- Mit „Neue Vorschläge annehmen“ schliesst du die Seite. Die Liste aktualisiert sich alle 15 Sekunden.
 - Für Songs gibt es den Spielmodus **„Song summen“**: Lege im Admin-Tool eine Spalte mit diesem Modus an.
 
 ## Startinhalte im Repo (optional)

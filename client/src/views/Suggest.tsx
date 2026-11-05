@@ -27,7 +27,6 @@ export default function Suggest() {
     }
   });
   const [col, setCol] = useState<string | null>(null);
-  const [value, setValue] = useState<number | null>(null);
   const [begriff, setBegriff] = useState('');
   const [verboten, setVerboten] = useState('');
   const [kategorie, setKategorie] = useState('');
@@ -80,7 +79,7 @@ export default function Suggest() {
   };
 
   const complete = (() => {
-    if (!name.trim() || !column || !value) return false;
+    if (!name.trim() || !column) return false;
     if (mode === 'tabu') return !!begriff.trim() && verboten.split(',').some((x) => x.trim());
     if (mode === 'guess') return !!file && !!loesung.trim();
     if (mode === 'quiz') return !!frage.trim() && optionen.every((o) => o.trim());
@@ -103,7 +102,7 @@ export default function Suggest() {
               ? { frage, optionen, richtig }
               : { begriff };
       const dataUrl = mode === 'guess' && file ? await shrinkImage(file) : undefined;
-      await postAction({ role: 'player' }, 'suggest', { von: name.trim(), col, value, entry, dataUrl });
+      await postAction({ role: 'player' }, 'suggest', { von: name.trim(), col, entry, dataUrl });
       setSent((n) => n + 1);
       setThanks(true);
       reset();
@@ -126,13 +125,13 @@ export default function Suggest() {
       <div className="panel blue" style={{ fontSize: 18, lineHeight: 1.35 }}>
         <b style={{ fontSize: 20 }}>So funktioniert's</b>
         <p style={{ margin: '8px 0' }}>
-          Schlag Begriffe, Songs, Bilder oder Quizfragen vor. Sie kommen direkt ins Spiel und werden zufällig gezogen. Verraten wird nichts: Was du hier einträgst, sieht niemand sonst.
+          Schlag so viele Begriffe, Songs, Bilder oder Quizfragen vor, wie du willst. Die Spielleitung schaut sich jeden Vorschlag an und nimmt die passenden ins Spiel. Ausser ihr sieht niemand, was du einträgst, und es wird nichts verraten.
         </p>
         <p style={{ margin: '8px 0' }}>
           <b>Dein Vorschlag kommt nie bei dir oder deinem Team dran.</b> Sonst hättet ihr einen Vorteil, weil ihr die Lösung schon kennt. Wenn möglich bekommt ihn auch nicht das Team, das gerade klauen dürfte.
         </p>
         <p style={{ margin: '8px 0 0' }}>
-          👉 Gib darum <b>genau den Namen ein, mit dem du nachher mitspielst</b>. Nur so erkennt das Spiel, zu welchem Team du gehörst.
+          👉 Gib darum <b>genau den Namen ein, mit dem du nachher mitspielst</b>. Nur so erkennt das Spiel, zu welchem Team du gehörst. Und falls bei einem Vorschlag etwas unklar ist, weiss die Spielleitung, wen sie fragen kann.
         </p>
       </div>
 
@@ -140,7 +139,7 @@ export default function Suggest() {
         <div className="panel" style={{ background: '#3DDC84', color: '#2A1E5C', textAlign: 'center' }}>
           <h2 style={{ margin: 0 }}>Danke! 🎉</h2>
           <p style={{ margin: '6px 0 0' }}>
-            {sent === 1 ? 'Dein Vorschlag ist im Spiel.' : `${sent} Vorschläge eingereicht.`} Noch einer?
+            {sent === 1 ? 'Dein Vorschlag ist bei der Spielleitung.' : `${sent} Vorschläge eingereicht.`} Noch einer?
           </p>
         </div>
       )}
@@ -166,16 +165,6 @@ export default function Suggest() {
           ))}
         </div>
         {column && <div className="hint">{modes[column.mode].rule}</div>}
-
-        <label className="card-title">Schwierigkeit (Punkte)</label>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-          {info.values.map((v, i) => (
-            <button key={v} className={`btn small ${value === v ? '' : 'ghost'}`} style={{ minHeight: 48, fontSize: 18 }} onClick={() => setValue(v)}>
-              {v}
-              {i === 0 ? ' · leicht' : i === info.values.length - 1 ? ' · schwer' : ''}
-            </button>
-          ))}
-        </div>
 
         {mode && ['pantomime', 'malen', 'emoji', 'summen', 'tabu'].includes(mode) && (
           <>
