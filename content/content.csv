@@ -1,0 +1,76 @@
+﻿modus;wert;begriff;verboten;kategorie;datei;loesung;fokusX;fokusY;frage;optionen;richtig
+pantomime;100;Zähneputzen;;;;;;;;;
+pantomime;100;Schuhe binden;;;;;;;;;
+pantomime;100;Regenschirm öffnen;;;;;;;;;
+pantomime;200;Velofahren;;;;;;;;;
+pantomime;200;Pizza backen;;;;;;;;;
+pantomime;200;Hund ausführen;;;;;;;;;
+pantomime;300;Skifahren;;;;;;;;;
+pantomime;300;Fensterputzen;;;;;;;;;
+pantomime;300;Zelt aufstellen;;;;;;;;;
+pantomime;400;Fondue essen;;;;;;;;;
+pantomime;400;Bergsteigen;;;;;;;;;
+pantomime;400;Kuh melken;;;;;;;;;
+pantomime;500;Ein Selfie mit einem Bären;;;;;;;;;
+pantomime;500;Fallschirmspringen;;;;;;;;;
+pantomime;500;Eine Hochzeit crashen;;;;;;;;;
+tabu;100;Kaffee;trinken|Bohne|Tasse;;;;;;;;
+tabu;100;Schokolade;süss|braun|Kakao;;;;;;;;
+tabu;200;Geburtstag;Kuchen|feiern|Geschenk|Jahr;;;;;;;;
+tabu;200;Zug;SBB|Bahnhof|Schiene|fahren;;;;;;;;
+tabu;300;Matterhorn;Berg|Zermatt|Toblerone|Wallis;;;;;;;;
+tabu;300;Raclette;Käse|Kartoffel|schmelzen|Pfännchen;;;;;;;;
+tabu;400;Handy;Telefon|anrufen|Smartphone|App|Display;;;;;;;;
+tabu;400;Ferien;Urlaub|Reise|Strand|frei|Hotel;;;;;;;;
+tabu;500;Wecker;aufstehen|Morgen|klingeln|Uhr|schlafen;;;;;;;;
+tabu;500;Feuerwerk;Rakete|Silvester|knallen|Himmel|1. August;;;;;;;;
+malen;100;Sonne;;;;;;;;;
+malen;100;Haus;;;;;;;;;
+malen;100;Baum;;;;;;;;;
+malen;200;Fahrrad;;;;;;;;;
+malen;200;Schneemann;;;;;;;;;
+malen;200;Regenbogen;;;;;;;;;
+malen;300;Leuchtturm;;;;;;;;;
+malen;300;Giraffe;;;;;;;;;
+malen;300;Geburtstagstorte;;;;;;;;;
+malen;400;Eiffelturm;;;;;;;;;
+malen;400;Astronaut;;;;;;;;;
+malen;400;Piratenschiff;;;;;;;;;
+malen;500;Zeitmaschine;;;;;;;;;
+malen;500;Muskelkater;;;;;;;;;
+malen;500;Heimweh;;;;;;;;;
+emoji;100;Titanic;;;;;;;;;
+emoji;100;Harry Potter;;;;;;;;;
+emoji;100;König der Löwen;;;;;;;;;
+emoji;200;Findet Nemo;;;;;;;;;
+emoji;200;Star Wars;;;;;;;;;
+emoji;200;Die Eiskönigin;;;;;;;;;
+emoji;300;Jurassic Park;;;;;;;;;
+emoji;300;Fluch der Karibik;;;;;;;;;
+emoji;300;Shrek;;;;;;;;;
+emoji;400;Zurück in die Zukunft;;;;;;;;;
+emoji;400;Der Herr der Ringe;;;;;;;;;
+emoji;400;Ratatouille;;;;;;;;;
+emoji;500;Die Schöne und das Biest;;;;;;;;;
+emoji;500;Kevin – Allein zu Haus;;;;;;;;;
+emoji;500;Pretty Woman;;;;;;;;;
+guess;100;;;Ort;platzhalter-berge.jpg;Berge mit Sonne;0.75;0.25;;;
+guess;100;;;Essen;platzhalter-pizza.jpg;Pizza;0.5;0.5;;;
+guess;200;;;Gegenstand;platzhalter-auto.jpg;Rotes Auto;;;;;
+guess;200;;;Ort;platzhalter-leuchtturm.jpg;Leuchtturm;0.5;0.3;;;
+guess;300;;;Character;platzhalter-katze.jpg;Katze;0.5;0.45;;;
+guess;300;;;Essen;platzhalter-pizza.jpg;Pizza Margherita;;;;;
+guess;400;;;Ort;platzhalter-leuchtturm.jpg;Leuchtturm am Meer;0.2;0.8;;;
+guess;400;;;Gegenstand;platzhalter-auto.jpg;Auto;0.3;0.7;;;
+guess;500;;;Character;platzhalter-katze.jpg;Die Katze;0.8;0.8;;;
+guess;500;;;Ort;platzhalter-berge.jpg;Alpen;0.15;0.75;;;
+quiz;100;;;;;;;;Was ist {name}s Lieblingsessen? (Platzhalter);Pizza|Sushi|Lasagne|Curry;1
+quiz;100;;;;;;;;Welche Farbe mag {name} am liebsten? (Platzhalter);Blau|Grün|Violett|Gelb;2
+quiz;200;;;;;;;;Welches Tier wäre {name} am liebsten? (Platzhalter);Katze|Delfin|Adler|Faultier;3
+quiz;200;;;;;;;;Was trinkt {name} am Morgen? (Platzhalter);Kaffee|Tee|Ovomaltine|Nichts;0
+quiz;300;;;;;;;;Wohin ging {name}s erste grosse Reise? (Platzhalter);Italien|Spanien|London|Paris;0
+quiz;300;;;;;;;;Welches Instrument hat {name} mal gelernt? (Platzhalter);Blockflöte|Klavier|Gitarre|Keines;1
+quiz;400;;;;;;;;Welche Serie hat {name} am häufigsten geschaut? (Platzhalter);Friends|The Office|Gilmore Girls|How I Met Your Mother;2
+quiz;400;;;;;;;;Was ist {name}s grösste Angst? (Platzhalter);Spinnen|Höhe|Clowns|Dunkelheit;0
+quiz;500;;;;;;;;Wie hiess {name}s erstes Kuscheltier? (Platzhalter);Bärli|Hasi|Mausi|Schnuffel;3
+quiz;500;;;;;;;;Welchen Beruf wollte {name} als Kind? (Platzhalter);Tierärztin|Astronautin|Lehrerin|Sängerin;1

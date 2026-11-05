@@ -1,0 +1,34 @@
+{
+  "name": "leagame",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Multiplayer-Partyspiel (Jeopardy x Activity) für einen Geburtstag – Vercel oder lokal",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "npm run build && node server/index.js",
+    "build": "node scripts/validate.js && vite build",
+    "dev": "node --watch-path=server --watch-path=lib server/index.js --dev",
+    "import": "node scripts/import-csv.js",
+    "validate": "node scripts/validate.js",
+    "typecheck": "tsc --noEmit -p client"
+  },
+  "dependencies": {
+    "@fontsource/fredoka": "^5.2.8",
+    "@upstash/redis": "^1.41.0",
+    "@vitejs/plugin-react": "^6.0.0",
+    "express": "^5.1.0",
+    "qrcode": "^1.5.4",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "vite": "^8.0.0"
+  },
+  "devDependencies": {
+    "@types/qrcode": "^1.5.5",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "typescript": "^5.9.0"
+  }
+}
