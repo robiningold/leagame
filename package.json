@@ -3,25 +3,26 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Lokales Multiplayer-Partyspiel (Jeopardy x Activity) für einen Geburtstag",
-  "engines": { "node": ">=20" },
+  "description": "Multiplayer-Partyspiel (Jeopardy x Activity) für einen Geburtstag – Vercel oder lokal",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
-    "start": "vite build && node server/index.js",
-    "build": "vite build",
-    "serve": "node server/index.js",
-    "dev": "node --watch-path=server server/index.js --dev",
+    "start": "npm run build && node server/index.js",
+    "build": "node scripts/validate.js && vite build",
+    "dev": "node --watch-path=server --watch-path=lib server/index.js --dev",
     "import": "node scripts/import-csv.js",
+    "validate": "node scripts/validate.js",
     "typecheck": "tsc --noEmit -p client"
   },
   "dependencies": {
     "@fontsource/fredoka": "^5.2.8",
+    "@upstash/redis": "^1.41.0",
     "@vitejs/plugin-react": "^6.0.0",
     "express": "^5.1.0",
     "qrcode": "^1.5.4",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
-    "socket.io": "^4.8.1",
-    "socket.io-client": "^4.8.1",
     "vite": "^8.0.0"
   },
   "devDependencies": {

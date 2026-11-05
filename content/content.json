@@ -1,0 +1,467 @@
+{
+  "pantomime": {
+    "100": [
+      {
+        "begriff": "Zähneputzen"
+      },
+      {
+        "begriff": "Schuhe binden"
+      },
+      {
+        "begriff": "Regenschirm öffnen"
+      }
+    ],
+    "200": [
+      {
+        "begriff": "Velofahren"
+      },
+      {
+        "begriff": "Pizza backen"
+      },
+      {
+        "begriff": "Hund ausführen"
+      }
+    ],
+    "300": [
+      {
+        "begriff": "Skifahren"
+      },
+      {
+        "begriff": "Fensterputzen"
+      },
+      {
+        "begriff": "Zelt aufstellen"
+      }
+    ],
+    "400": [
+      {
+        "begriff": "Fondue essen"
+      },
+      {
+        "begriff": "Bergsteigen"
+      },
+      {
+        "begriff": "Kuh melken"
+      }
+    ],
+    "500": [
+      {
+        "begriff": "Ein Selfie mit einem Bären"
+      },
+      {
+        "begriff": "Fallschirmspringen"
+      },
+      {
+        "begriff": "Eine Hochzeit crashen"
+      }
+    ]
+  },
+  "tabu": {
+    "100": [
+      {
+        "begriff": "Kaffee",
+        "verboten": [
+          "trinken",
+          "Bohne",
+          "Tasse"
+        ]
+      },
+      {
+        "begriff": "Schokolade",
+        "verboten": [
+          "süss",
+          "braun",
+          "Kakao"
+        ]
+      }
+    ],
+    "200": [
+      {
+        "begriff": "Geburtstag",
+        "verboten": [
+          "Kuchen",
+          "feiern",
+          "Geschenk",
+          "Jahr"
+        ]
+      },
+      {
+        "begriff": "Zug",
+        "verboten": [
+          "SBB",
+          "Bahnhof",
+          "Schiene",
+          "fahren"
+        ]
+      }
+    ],
+    "300": [
+      {
+        "begriff": "Matterhorn",
+        "verboten": [
+          "Berg",
+          "Zermatt",
+          "Toblerone",
+          "Wallis"
+        ]
+      },
+      {
+        "begriff": "Raclette",
+        "verboten": [
+          "Käse",
+          "Kartoffel",
+          "schmelzen",
+          "Pfännchen"
+        ]
+      }
+    ],
+    "400": [
+      {
+        "begriff": "Handy",
+        "verboten": [
+          "Telefon",
+          "anrufen",
+          "Smartphone",
+          "App",
+          "Display"
+        ]
+      },
+      {
+        "begriff": "Ferien",
+        "verboten": [
+          "Urlaub",
+          "Reise",
+          "Strand",
+          "frei",
+          "Hotel"
+        ]
+      }
+    ],
+    "500": [
+      {
+        "begriff": "Wecker",
+        "verboten": [
+          "aufstehen",
+          "Morgen",
+          "klingeln",
+          "Uhr",
+          "schlafen"
+        ]
+      },
+      {
+        "begriff": "Feuerwerk",
+        "verboten": [
+          "Rakete",
+          "Silvester",
+          "knallen",
+          "Himmel",
+          "1. August"
+        ]
+      }
+    ]
+  },
+  "malen": {
+    "100": [
+      {
+        "begriff": "Sonne"
+      },
+      {
+        "begriff": "Haus"
+      },
+      {
+        "begriff": "Baum"
+      }
+    ],
+    "200": [
+      {
+        "begriff": "Fahrrad"
+      },
+      {
+        "begriff": "Schneemann"
+      },
+      {
+        "begriff": "Regenbogen"
+      }
+    ],
+    "300": [
+      {
+        "begriff": "Leuchtturm"
+      },
+      {
+        "begriff": "Giraffe"
+      },
+      {
+        "begriff": "Geburtstagstorte"
+      }
+    ],
+    "400": [
+      {
+        "begriff": "Eiffelturm"
+      },
+      {
+        "begriff": "Astronaut"
+      },
+      {
+        "begriff": "Piratenschiff"
+      }
+    ],
+    "500": [
+      {
+        "begriff": "Zeitmaschine"
+      },
+      {
+        "begriff": "Muskelkater"
+      },
+      {
+        "begriff": "Heimweh"
+      }
+    ]
+  },
+  "emoji": {
+    "100": [
+      {
+        "begriff": "Titanic"
+      },
+      {
+        "begriff": "Harry Potter"
+      },
+      {
+        "begriff": "König der Löwen"
+      }
+    ],
+    "200": [
+      {
+        "begriff": "Findet Nemo"
+      },
+      {
+        "begriff": "Star Wars"
+      },
+      {
+        "begriff": "Die Eiskönigin"
+      }
+    ],
+    "300": [
+      {
+        "begriff": "Jurassic Park"
+      },
+      {
+        "begriff": "Fluch der Karibik"
+      },
+      {
+        "begriff": "Shrek"
+      }
+    ],
+    "400": [
+      {
+        "begriff": "Zurück in die Zukunft"
+      },
+      {
+        "begriff": "Der Herr der Ringe"
+      },
+      {
+        "begriff": "Ratatouille"
+      }
+    ],
+    "500": [
+      {
+        "begriff": "Die Schöne und das Biest"
+      },
+      {
+        "begriff": "Kevin – Allein zu Haus"
+      },
+      {
+        "begriff": "Pretty Woman"
+      }
+    ]
+  },
+  "guess": {
+    "100": [
+      {
+        "kategorie": "Ort",
+        "datei": "platzhalter-berge.jpg",
+        "loesung": "Berge mit Sonne",
+        "fokusX": 0.75,
+        "fokusY": 0.25
+      },
+      {
+        "kategorie": "Essen",
+        "datei": "platzhalter-pizza.jpg",
+        "loesung": "Pizza",
+        "fokusX": 0.5,
+        "fokusY": 0.5
+      }
+    ],
+    "200": [
+      {
+        "kategorie": "Gegenstand",
+        "datei": "platzhalter-auto.jpg",
+        "loesung": "Rotes Auto"
+      },
+      {
+        "kategorie": "Ort",
+        "datei": "platzhalter-leuchtturm.jpg",
+        "loesung": "Leuchtturm",
+        "fokusX": 0.5,
+        "fokusY": 0.3
+      }
+    ],
+    "300": [
+      {
+        "kategorie": "Character",
+        "datei": "platzhalter-katze.jpg",
+        "loesung": "Katze",
+        "fokusX": 0.5,
+        "fokusY": 0.45
+      },
+      {
+        "kategorie": "Essen",
+        "datei": "platzhalter-pizza.jpg",
+        "loesung": "Pizza Margherita"
+      }
+    ],
+    "400": [
+      {
+        "kategorie": "Ort",
+        "datei": "platzhalter-leuchtturm.jpg",
+        "loesung": "Leuchtturm am Meer",
+        "fokusX": 0.2,
+        "fokusY": 0.8
+      },
+      {
+        "kategorie": "Gegenstand",
+        "datei": "platzhalter-auto.jpg",
+        "loesung": "Auto",
+        "fokusX": 0.3,
+        "fokusY": 0.7
+      }
+    ],
+    "500": [
+      {
+        "kategorie": "Character",
+        "datei": "platzhalter-katze.jpg",
+        "loesung": "Die Katze",
+        "fokusX": 0.8,
+        "fokusY": 0.8
+      },
+      {
+        "kategorie": "Ort",
+        "datei": "platzhalter-berge.jpg",
+        "loesung": "Alpen",
+        "fokusX": 0.15,
+        "fokusY": 0.75
+      }
+    ]
+  },
+  "quiz": {
+    "100": [
+      {
+        "frage": "Was ist {name}s Lieblingsessen? (Platzhalter)",
+        "optionen": [
+          "Pizza",
+          "Sushi",
+          "Lasagne",
+          "Curry"
+        ],
+        "richtig": 1
+      },
+      {
+        "frage": "Welche Farbe mag {name} am liebsten? (Platzhalter)",
+        "optionen": [
+          "Blau",
+          "Grün",
+          "Violett",
+          "Gelb"
+        ],
+        "richtig": 2
+      }
+    ],
+    "200": [
+      {
+        "frage": "Welches Tier wäre {name} am liebsten? (Platzhalter)",
+        "optionen": [
+          "Katze",
+          "Delfin",
+          "Adler",
+          "Faultier"
+        ],
+        "richtig": 3
+      },
+      {
+        "frage": "Was trinkt {name} am Morgen? (Platzhalter)",
+        "optionen": [
+          "Kaffee",
+          "Tee",
+          "Ovomaltine",
+          "Nichts"
+        ],
+        "richtig": 0
+      }
+    ],
+    "300": [
+      {
+        "frage": "Wohin ging {name}s erste grosse Reise? (Platzhalter)",
+        "optionen": [
+          "Italien",
+          "Spanien",
+          "London",
+          "Paris"
+        ],
+        "richtig": 0
+      },
+      {
+        "frage": "Welches Instrument hat {name} mal gelernt? (Platzhalter)",
+        "optionen": [
+          "Blockflöte",
+          "Klavier",
+          "Gitarre",
+          "Keines"
+        ],
+        "richtig": 1
+      }
+    ],
+    "400": [
+      {
+        "frage": "Welche Serie hat {name} am häufigsten geschaut? (Platzhalter)",
+        "optionen": [
+          "Friends",
+          "The Office",
+          "Gilmore Girls",
+          "How I Met Your Mother"
+        ],
+        "richtig": 2
+      },
+      {
+        "frage": "Was ist {name}s grösste Angst? (Platzhalter)",
+        "optionen": [
+          "Spinnen",
+          "Höhe",
+          "Clowns",
+          "Dunkelheit"
+        ],
+        "richtig": 0
+      }
+    ],
+    "500": [
+      {
+        "frage": "Wie hiess {name}s erstes Kuscheltier? (Platzhalter)",
+        "optionen": [
+          "Bärli",
+          "Hasi",
+          "Mausi",
+          "Schnuffel"
+        ],
+        "richtig": 3
+      },
+      {
+        "frage": "Welchen Beruf wollte {name} als Kind? (Platzhalter)",
+        "optionen": [
+          "Tierärztin",
+          "Astronautin",
+          "Lehrerin",
+          "Sängerin"
+        ],
+        "richtig": 1
+      }
+    ]
+  }
+}
