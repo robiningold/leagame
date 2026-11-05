@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import QRCode from 'qrcode';
 import { guessStage, postAction, useGame, useNow, GUESS_FACTORS } from '../api';
 import { AnimatedNumber, Background, Confetti, DrawView, GuessImage, TimerRing, modeOf, playerOf, teamOf } from '../components';
-import { HOW_TEXT, MODE_ORDER, VALUES, modeInfo } from '../modes';
+import { HOW_TEXT, modeInfo } from '../modes';
 import { audioReady, sfx, unlockAudio } from '../sound';
 import type { Round, View } from '../types';
 
@@ -80,7 +80,7 @@ export default function Tv() {
             <div className="panel" style={{ padding: 60, textAlign: 'center', width: 1100 }}>
               <div className="big-text" style={{ fontSize: 72 }}>Gespeichertes Spiel fortsetzen?</div>
               <p className="mid-text muted" style={{ fontSize: 36 }}>
-                {view.players.length} Spieler:innen · {view.cells.filter((c) => c.played).length} von 30 Feldern gespielt
+                {view.players.length} Spieler:innen · {view.cells.filter((c) => c.played).length} von {view.cells.length} Feldern gespielt
               </p>
               <div style={{ display: 'flex', gap: 30, justifyContent: 'center' }}>
                 <button className="btn big" style={{ width: 420 }} onClick={() => { unlockAudio(); setSoundOn(true); confirmResume(); }}>
@@ -181,22 +181,33 @@ function BoardScreen({ view }: { view: View }) {
   const modes = modeInfo(view.bdayName);
   const cur = playerOf(view, view.current.playerId);
   const curTeam = teamOf(view, view.current.teamId);
+  const cols = view.board.columns;
+  const rows = view.board.values;
+  // Feldhöhe so wählen, dass alle Zeilen ohne Scrollen auf 1080px passen
+  const cellH = Math.min(128, Math.floor((1080 - 130 - 70 - 32 - 112 - 14 * rows.length) / rows.length));
+  const cellFont = Math.min(72, Math.round(cellH * 0.82)); // min. ~64px auch bei 8 Zeilen
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <ScoreBar view={view} />
-      <div className="board">
-        {MODE_ORDER.map((m) => (
-          <div key={m} className="head" style={{ '--mc': modes[m].color } as any}>
-            <span className="ic">{modes[m].icon}</span>
-            <span>{modes[m].label}</span>
+      <div className="board" style={{ gridTemplateColumns: `repeat(${cols.length}, 1fr)` }}>
+        {cols.map((col) => (
+          <div key={col.id} className="head" style={{ '--mc': modes[col.mode].color, fontSize: cols.length > 6 ? 24 : 30 } as any}>
+            <span className="ic">{modes[col.mode].icon}</span>
+            <span>{col.title}</span>
           </div>
         ))}
-        {VALUES.map((v) =>
-          MODE_ORDER.map((m) => {
-            const c = view.cells.find((x) => x.mode === m && x.value === v)!;
+        {rows.map((v) =>
+          cols.map((col) => {
+            const c = view.cells.find((x) => x.col === col.id && x.value === v);
+            if (!c) return <div key={col.id + v} />;
             const won = teamOf(view, c.wonBy);
             return (
-              <div key={c.id} data-cell={c.id} className={`cell ${c.played ? 'played' : ''} ${view.round?.cellId === c.id ? 'picked' : ''}`} style={c.played ? ({ '--wc': won?.farbe || '#7d7a96' } as any) : undefined}>
+              <div
+                key={c.id}
+                data-cell={c.id}
+                className={`cell ${c.played ? 'played' : ''} ${view.round?.cellId === c.id ? 'picked' : ''}`}
+                style={{ height: cellH, fontSize: c.played ? cellFont * 0.6 : cellFont, ...(c.played ? ({ '--wc': won?.farbe || '#7d7a96' } as any) : {}) }}
+              >
                 {c.played ? (c.points ? `+${c.points}` : '') : v}
                 {c.played && c.double && <span className="x2">×2</span>}
               </div>
@@ -259,7 +270,7 @@ function RoundOverlay({ view, round }: { view: View; round: Round }) {
           <span className="icon-box" style={{ width: 80, height: 80, fontSize: 52 }}>
             {mode.icon}
           </span>
-          <span>{mode.label}</span>
+          <span>{round.title || mode.label}</span>
           <span className="val">
             {round.value}
             {round.double && <span style={{ color: '#FFCB2D' }}> ×2</span>}

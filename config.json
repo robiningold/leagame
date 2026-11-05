@@ -3,8 +3,14 @@
   "geburtstagskind": "Lea",
   "adminPin": "1234",
   "teams": [
-    { "name": "Team Einhorn", "farbe": "#FF5FA2" },
-    { "name": "Team Rakete", "farbe": "#2EC4F1" }
+    {
+      "name": "Team 1",
+      "farbe": "#FF5FA2"
+    },
+    {
+      "name": "Team 2",
+      "farbe": "#2EC4F1"
+    }
   ],
   "rundendauerSekunden": 60,
   "klauenDauerSekunden": 10,

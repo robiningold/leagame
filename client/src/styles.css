@@ -798,11 +798,23 @@ a {
   gap: 6px;
 }
 .mini-board .h {
-  font-size: 22px;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.1;
   text-align: center;
-  border-radius: 12px;
+  border-radius: 10px;
   background: var(--mc);
-  padding: 6px 0;
+  padding: 6px 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  overflow: hidden;
+  word-break: break-word;
+  hyphens: auto;
+}
+.admin .mini-board .h {
+  font-size: 15px;
 }
 .mini-board button {
   min-height: 56px;
@@ -939,7 +951,7 @@ a {
 .admin {
   position: relative;
   z-index: 1;
-  max-width: 1200px;
+  max-width: 1700px;
   margin: 0 auto;
   padding: 16px;
   display: flex;
@@ -988,4 +1000,185 @@ a {
   height: 12px;
   border-radius: 50%;
   margin-right: 6px;
+}
+
+/* ---------- Admin: Tabs und Editor ---------- */
+.tabs {
+  display: flex;
+  gap: 8px;
+  background: rgba(42, 30, 92, 0.45);
+  padding: 6px;
+  border-radius: 20px;
+  align-self: flex-start;
+}
+.tabs button {
+  border: none;
+  background: none;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 800;
+  padding: 10px 20px;
+  border-radius: 14px;
+  cursor: pointer;
+}
+.tabs button.sel {
+  background: var(--yellow);
+  color: var(--ink);
+}
+.badge {
+  background: var(--red);
+  color: #fff;
+  border-radius: 999px;
+  padding: 0 8px;
+  margin-left: 4px;
+}
+.ed-grid {
+  display: grid;
+  gap: 8px;
+  align-items: stretch;
+}
+.ed-head {
+  border-radius: 16px;
+  padding: 8px;
+  background: var(--mc);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.ed-head input,
+.ed-head select,
+.ed-row input {
+  width: 100%;
+  font-size: 15px;
+  font-weight: 800;
+  border-radius: 10px;
+  border: none;
+  padding: 6px 8px;
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.92);
+  user-select: text;
+  -webkit-user-select: text;
+}
+.ed-head .tools {
+  display: flex;
+  gap: 4px;
+  justify-content: space-between;
+}
+.ed-head .tools button,
+.ed-row button.x {
+  border: none;
+  background: rgba(0, 0, 0, 0.2);
+  color: #fff;
+  border-radius: 8px;
+  min-width: 30px;
+  min-height: 30px;
+  cursor: pointer;
+  font-weight: 800;
+}
+.ed-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  justify-content: center;
+}
+.ed-cell {
+  border: 3px solid transparent;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--blue-a), var(--blue-b));
+  color: #fff;
+  min-height: 76px;
+  padding: 8px;
+  text-align: left;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+}
+.ed-cell .cnt {
+  font-size: 13px;
+  opacity: 0.9;
+}
+.ed-cell .prev {
+  font-size: 15px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ed-cell.empty {
+  background: rgba(255, 77, 94, 0.35);
+  border-style: dashed;
+  border-color: rgba(255, 255, 255, 0.5);
+}
+.ed-cell.sel {
+  border-color: var(--yellow);
+  box-shadow: 0 0 0 3px var(--yellow);
+}
+.ed-add {
+  border: 3px dashed rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  border-radius: 14px;
+  font-size: 16px;
+  font-weight: 800;
+  cursor: pointer;
+  min-height: 48px;
+}
+.entry-card {
+  background: rgba(42, 30, 92, 0.45);
+  border-radius: 18px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.entry-card label {
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  opacity: 0.85;
+}
+.entry-card .input,
+.settings .input {
+  font-size: 18px;
+  min-height: 46px;
+  padding: 6px 12px;
+  border-radius: 12px;
+}
+.focus-pick {
+  position: relative;
+  max-width: 420px;
+  border-radius: 14px;
+  overflow: hidden;
+  cursor: crosshair;
+}
+.focus-pick img {
+  width: 100%;
+  display: block;
+}
+.focus-pick .mark {
+  position: absolute;
+  border: 3px solid var(--yellow);
+  box-shadow: 0 0 0 2000px rgba(0, 0, 0, 0.45);
+  pointer-events: none;
+  border-radius: 6px;
+}
+.settings {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
+}
+.settings label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-weight: 800;
+  font-size: 14px;
+}
+.save-state {
+  font-size: 15px;
+  font-weight: 700;
 }

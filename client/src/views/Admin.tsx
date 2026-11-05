@@ -3,6 +3,7 @@ import { postAction, useGame } from '../api';
 import { Background, DrawView, MiniBoard, TimerText, modeOf, playerOf, teamOf } from '../components';
 import { HOW_TEXT } from '../modes';
 import type { Round, View } from '../types';
+import Editor from './AdminEditor';
 
 const PIN_KEY = 'leagame.adminPin';
 
@@ -60,6 +61,11 @@ function AdminPanel({ pin, onLogout }: { pin: string; onLogout: () => void }) {
   const { view, act, error, offline } = useGame({ role: 'admin', pin }, 700);
   const [msg, setMsg] = useState<string | null>(null);
   const [resumeOk, setResumeOk] = useState<string | null>(() => sessionStorage.getItem('leagame.adminResumeOk'));
+  const [tab, setTabState] = useState<'edit' | 'live'>(() => (localStorage.getItem('leagame.adminTab') === 'live' ? 'live' : 'edit'));
+  const setTab = (t: 'edit' | 'live') => {
+    localStorage.setItem('leagame.adminTab', t);
+    setTabState(t);
+  };
 
   const run = async (type: string, payload: any = {}) => {
     try {
@@ -97,6 +103,7 @@ function AdminPanel({ pin, onLogout }: { pin: string; onLogout: () => void }) {
     );
 
   const r = view.round;
+  const needsDecision = !!r && ['violation', 'steal', 'quizConfirm'].includes(r.stage);
   const needResume = view.gameId !== resumeOk && (view.started || view.players.some((p) => !p.fake)) && view.phase !== 'final';
 
   return (
@@ -124,11 +131,28 @@ function AdminPanel({ pin, onLogout }: { pin: string; onLogout: () => void }) {
         )}
         {msg && <div className="error">{msg}</div>}
 
+        <div className="tabs">
+          <button className={tab === 'edit' ? 'sel' : ''} onClick={() => setTab('edit')}>
+            ✏️ Spiel bearbeiten
+          </button>
+          <button className={tab === 'live' ? 'sel' : ''} onClick={() => setTab('live')}>
+            🎮 Live-Steuerung {needsDecision && <span className="badge">!</span>}
+          </button>
+        </div>
+        {tab === 'edit' && needsDecision && (
+          <button className="btn red" onClick={() => setTab('live')}>
+            ⚠️ Im Spiel wartet eine Entscheidung auf dich – zur Live-Steuerung
+          </button>
+        )}
+
+        {tab === 'edit' && <Editor pin={pin} view={view} />}
+        {tab === 'live' && (
+        <>
         {needResume && (
           <div className="panel blue">
             <h2>Gespeichertes Spiel fortsetzen?</h2>
             <p>
-              {view.players.length} Spieler:innen, {view.cells.filter((c) => c.played).length} von 30 Feldern gespielt.
+              {view.players.length} Spieler:innen, {view.cells.filter((c) => c.played).length} von {view.cells.length} Feldern gespielt.
             </p>
             <div className="row">
               <button className="btn" onClick={() => { sessionStorage.setItem('leagame.adminResumeOk', view.gameId); setResumeOk(view.gameId); }}>
@@ -225,9 +249,9 @@ function AdminPanel({ pin, onLogout }: { pin: string; onLogout: () => void }) {
               showDoubles
               onPick={(c) => {
                 if (c.played) {
-                  if (confirm(`Feld ${c.mode} ${c.value} zurücksetzen?`)) run('resetCell', { cellId: c.id });
+                  if (confirm(`Feld ${colTitle(view, c.col)} ${c.value} zurücksetzen?`)) run('resetCell', { cellId: c.id });
                 } else if (view.phase === 'board' && !r) {
-                  if (confirm(`Feld ${modeOf(view, c.mode).label} ${c.value} für ${playerOf(view, view.current.playerId)?.name} wählen?`)) run('pick', { cellId: c.id });
+                  if (confirm(`Feld ${colTitle(view, c.col)} ${c.value} für ${playerOf(view, view.current.playerId)?.name} wählen?`)) run('pick', { cellId: c.id });
                 }
               }}
             />
@@ -235,10 +259,14 @@ function AdminPanel({ pin, onLogout }: { pin: string; onLogout: () => void }) {
         </div>
 
         <Players view={view} run={run} />
+        </>
+        )}
       </div>
     </div>
   );
 }
+
+const colTitle = (view: View, colId: string) => view.board.columns.find((c) => c.id === colId)?.title || '';
 
 function phaseText(view: View) {
   if (view.phase === 'lobby') return 'Lobby';
@@ -256,7 +284,7 @@ function RoundControl({ view, round, run }: { view: View; round: Round; run: (t:
   return (
     <div className="panel" style={{ background: mode.color }}>
       <h2>
-        {mode.icon} {mode.label} {round.value}
+        {mode.icon} {round.title || mode.label} {round.value}
         {round.double ? ' ×2 (DOPPELT)' : ''} – {active?.name} ({team?.name})
       </h2>
       <div className="grid2">

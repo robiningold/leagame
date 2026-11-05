@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Cell, Mode, Timer, View } from './types';
 import { remaining, serverNow, useNow } from './api';
-import { modeInfo, MODE_ORDER, VALUES } from './modes';
+import { modeInfo } from './modes';
 import { sfx } from './sound';
 
 // ---------------------------------------------------------------- Hintergrund
@@ -165,16 +165,18 @@ export function TimerText({ timer }: { timer: Timer | null }) {
 export function MiniBoard({ view, onPick, disabled, showDoubles }: { view: View; onPick?: (c: Cell) => void; disabled?: boolean; showDoubles?: boolean }) {
   const modes = modeInfo(view.bdayName);
   const team = (id: string | null) => view.teams.find((t) => t.id === id);
+  const cols = view.board.columns;
   return (
-    <div className="mini-board">
-      {MODE_ORDER.map((m) => (
-        <div key={m} className="h" style={{ '--mc': modes[m].color } as any} title={modes[m].label}>
-          {modes[m].icon}
+    <div className="mini-board" style={{ gridTemplateColumns: `repeat(${cols.length}, 1fr)` }}>
+      {cols.map((col) => (
+        <div key={col.id} className="h" style={{ '--mc': modes[col.mode].color } as any} title={col.title}>
+          {col.title}
         </div>
       ))}
-      {VALUES.map((v) =>
-        MODE_ORDER.map((m) => {
-          const c = view.cells.find((x) => x.mode === m && x.value === v)!;
+      {view.board.values.map((v) =>
+        cols.map((col) => {
+          const c = view.cells.find((x) => x.col === col.id && x.value === v);
+          if (!c) return <div key={col.id + v} />;
           const isDouble = showDoubles && view.doubles?.includes(c.id);
           return (
             <button key={c.id} disabled={(disabled || c.played) && !(showDoubles && c.played)} style={c.played ? ({ '--wc': team(c.wonBy)?.farbe || '#6f6a8f', background: team(c.wonBy)?.farbe || '#6f6a8f', opacity: 0.5 } as any) : undefined} onClick={() => onPick?.(c)}>

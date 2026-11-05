@@ -15,8 +15,14 @@ export interface Player {
   fake: boolean;
   online: boolean;
 }
+export interface Column {
+  id: string;
+  mode: Mode;
+  title: string;
+}
 export interface Cell {
   id: string;
+  col: string;
   mode: Mode;
   value: number;
   played: boolean;
@@ -48,6 +54,8 @@ export interface RevealInfo {
 export interface Round {
   id: string;
   cellId: string;
+  col: string;
+  title: string;
   mode: Mode;
   value: number;
   double: boolean;
@@ -82,6 +90,8 @@ export interface View {
   teams: Team[];
   players: Player[];
   cells: Cell[];
+  board: { columns: Column[]; values: number[] };
+  emptyCells?: string[];
   current: { playerId: string | null; teamId: string | null };
   round: Round | null;
   started: boolean;

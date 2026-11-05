@@ -120,8 +120,15 @@ function JoinForm({ view, pinParam, onJoined }: { view: View; pinParam: string; 
   const [name, setName] = useState(() => localStorage.getItem('leagame.name') || '');
   const [pin, setPin] = useState(pinParam);
   const [teamId, setTeamId] = useState<string | null>(null);
+  const [teamName, setTeamName] = useState('');
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const chosen = view.teams.find((t) => t.id === teamId);
+  const canRename = view.phase === 'lobby';
+  const choose = (id: string) => {
+    setTeamId(id);
+    setTeamName(view.teams.find((t) => t.id === id)?.name || '');
+  };
   const submit = async () => {
     setErr(null);
     unlockAudio();
@@ -129,6 +136,10 @@ function JoinForm({ view, pinParam, onJoined }: { view: View; pinParam: string; 
     try {
       const res = await postAction({ role: 'player' }, 'join', { name, pin, teamId });
       localStorage.setItem('leagame.name', name);
+      // Teamname angepasst? Direkt nach dem Beitreten speichern
+      if (canRename && teamName.trim() && teamName.trim() !== chosen?.name) {
+        await postAction({ role: 'player', playerId: res.result.playerId }, 'renameTeam', { teamId, name: teamName.trim() }).catch(() => {});
+      }
       sfx.join();
       onJoined(res.result.playerId);
     } catch (e: any) {
@@ -154,18 +165,43 @@ function JoinForm({ view, pinParam, onJoined }: { view: View; pinParam: string; 
         <label className="card-title">Dein Team</label>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
           {view.teams.map((t) => (
-            <button key={t.id} className={`team-btn ${teamId === t.id ? 'sel' : ''}`} style={{ '--tc': t.farbe } as any} onClick={() => setTeamId(t.id)}>
+            <button key={t.id} className={`team-btn ${teamId === t.id ? 'sel' : ''}`} style={{ '--tc': t.farbe } as any} onClick={() => choose(t.id)}>
               {teamId === t.id ? '✓ ' : ''}
               {t.name}
             </button>
           ))}
         </div>
+        {chosen && canRename && (
+          <>
+            <label className="card-title">Teamname (optional anpassen)</label>
+            <input className="input" value={teamName} maxLength={24} onChange={(e) => setTeamName(e.target.value)} placeholder={chosen.name} />
+          </>
+        )}
         {err && <div className="error">{err}</div>}
         <button className="btn big" disabled={busy || !name.trim() || !teamId || pin.length !== 4} onClick={submit}>
           Los geht's! 🎉
         </button>
       </div>
     </>
+  );
+}
+
+function TeamNameEdit({ current, onSave }: { current: string; onSave: (name: string) => any }) {
+  const [editing, setEditing] = useState(false);
+  const [val, setVal] = useState(current);
+  if (!editing)
+    return (
+      <button className="btn ghost" onClick={() => { setVal(current); setEditing(true); }}>
+        ✏️ Teamnamen ändern
+      </button>
+    );
+  return (
+    <div style={{ display: 'flex', gap: 8 }}>
+      <input className="input" autoFocus value={val} maxLength={24} onChange={(e) => setVal(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && val.trim() && (onSave(val.trim()), setEditing(false))} />
+      <button className="btn" disabled={!val.trim()} onClick={() => { onSave(val.trim()); setEditing(false); }}>
+        OK
+      </button>
+    </div>
   );
 }
 
@@ -188,15 +224,7 @@ function LobbyWait({ view, wakeLockSupported, run }: { view: View; wakeLockSuppo
             </span>
           ))}
       </div>
-      <button
-        className="btn ghost"
-        onClick={() => {
-          const name = window.prompt('Neuer Teamname:', team?.name || '');
-          if (name && name.trim()) run('renameTeam', { teamId: me.teamId, name });
-        }}
-      >
-        ✏️ Teamnamen ändern
-      </button>
+      <TeamNameEdit current={team?.name || ''} onSave={(name) => run('renameTeam', { teamId: me.teamId, name })} />
       <p className="muted">Warte, bis die Spielleitung das Spiel startet.</p>
       {!wakeLockSupported && <div className="hint">Tipp: Stell die automatische Bildschirmsperre für heute Abend aus, dann bleibst du immer verbunden.</div>}
     </div>
@@ -249,7 +277,7 @@ function PlayerRound({ view, round, run }: { view: View; round: Round; run: (t: 
       <span className="icon-box" style={{ width: 52, height: 52, fontSize: 32 }}>
         {mode.icon}
       </span>
-      <b style={{ fontSize: 24, flex: 1 }}>{mode.label}</b>
+      <b style={{ fontSize: 24, flex: 1 }}>{round.title || mode.label}</b>
       <b style={{ fontSize: 24 }}>
         {round.value}
         {round.double ? ' ×2' : ''}

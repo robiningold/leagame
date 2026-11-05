@@ -4,3 +4,5 @@ data/savegame.json
 *.log
 .DS_Store
 content/content.json.bak
+data/spiel.json
+data/bilder/

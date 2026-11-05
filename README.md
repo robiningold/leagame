@@ -65,9 +65,25 @@ Alles ist offline lauffähig: Schrift (Nunito) und QR-Code sind eingebaut, Sound
 
 ---
 
-## Inhalte und Bilder einfügen
+## Spiel bearbeiten (Admin-Tool)
 
-Alle Inhalte stehen in **`content/content.json`**, Bilder in **`content/images/`**. Pro Modus und Wert gibt es eine Liste. Beim Aufdecken wird zufällig ein noch nicht genutzter Eintrag gewählt. Du kannst also mehr vorbereiten, als es Felder gibt.
+Öffne `/admin` → Tab **„✏️ Spiel bearbeiten“**. Alles wird automatisch gespeichert (in der Datenbank) und gilt sofort, ohne neuen Deploy.
+
+- **Spalten:** Titel frei wählbar, pro Spalte ein Spielmodus (Pantomime, Tabu, Malen, Emoji, Guess the ___, Quiz). Mit „+ Spalte“ hinzufügen (max. 8), mit ◀ ▶ verschieben, mit ✕ löschen. Ein Modus darf mehrfach vorkommen, z.B. zwei Pantomime-Spalten mit unterschiedlichen Titeln.
+- **Zeilen:** Punktwerte links frei änderbar, „+ Zeile“ hinzufügen (max. 8).
+- **Felder füllen:** Feld anklicken → Einträge hinzufügen. Pro Feld wird zufällig ein noch nicht gespielter Eintrag gezogen, du kannst also mehr vorbereiten als nötig. Rote Felder sind noch leer und können nicht gespielt werden.
+  - Tabu: verbotene Wörter mit Komma trennen.
+  - Guess: Bild hochladen (wird automatisch verkleinert), dann ins Bild klicken, wo der erste kleine Ausschnitt liegen soll.
+  - Quiz: Frage, 4 Antworten, richtige anklicken.
+  - `{name}` wird überall durch den Namen des Geburtstagskinds ersetzt.
+- **Einstellungen:** Titel, Name Geburtstagskind, Rundendauer, Klauen, Doppelt-Felder, Finaltext, Finale-Foto. Leere Felder = Standardwert aus `config.json`.
+- **Sicherung:** „Spiel als Datei sichern“ lädt alles als JSON herunter. „Startinhalte aus content.json laden“ ersetzt alles durch die Inhalte aus dem Repo.
+
+Der Tab **„🎮 Live-Steuerung“** ist für den Abend: Spiel starten, Geburtstagskind markieren, Regelverstösse und Klauen entscheiden, Punkte korrigieren, Personen verschieben. Wartet im Spiel eine Entscheidung, erscheint im Bearbeiten-Tab ein roter Hinweis.
+
+## Startinhalte im Repo (optional)
+
+Beim allerersten Start wird das Spiel aus **`content/content.json`** (Inhalte) und **`content/images/`** (Bilder) erzeugt. Danach bearbeitest du alles im Admin-Tool. Die Dateien brauchst du nur noch, wenn du Inhalte lieber in Excel vorbereitest und dann im Admin-Tool „Startinhalte aus content.json laden“ klickst.
 
 ```json
 {
@@ -80,19 +96,9 @@ Alle Inhalte stehen in **`content/content.json`**, Bilder in **`content/images/`
 }
 ```
 
-- `{name}` wird überall durch den Namen des Geburtstagskinds aus `config.json` ersetzt.
-- `richtig` ist der Index der richtigen Antwort, gezählt ab 0 (0 = erste, 3 = vierte).
-- `guess`: Das Bild kommt nach `content/images/`. `fokusX` und `fokusY` (0 bis 1) legen fest, wo der erste kleine Ausschnitt liegt (0/0 = oben links). Fehlen sie, wird zufällig gewählt, aber nicht am Rand.
-- **Finale-Foto** (optional): `content/images/finale.jpg`.
-- Mitgeliefert sind Platzhalter-Inhalte (mindestens 2 pro Feld) und 5 generierte Platzhalterbilder. Ersetze sie durch deine echten Inhalte.
-
-Inhalte prüfen, ohne zu starten:
-
-```bash
-npm run validate
-```
-
-Die Prüfung meldet zum Beispiel „Tabu 300 hat keine Einträge.“ oder „Bild xy.jpg nicht gefunden“.
+- `richtig` ist der Index der richtigen Antwort, gezählt ab 0.
+- `fokusX`/`fokusY` (0 bis 1) legen den ersten Bildausschnitt fest; fehlen sie, wird zufällig gewählt.
+- Inhalte prüfen: `npm run validate` (läuft auch bei jedem Build).
 
 ### Inhalte in Excel pflegen (CSV-Import)
 
@@ -118,13 +124,11 @@ Die alte `content.json` wird als `content.json.bak` gesichert. Bei Fehlern wird 
 
 ## Teamnamen
 
-Die Teams starten mit den Namen aus `config.json`. Danach können sie selbst einen Namen wählen:
-- **Auf dem Handy:** In der Lobby (vor dem Spielstart) kann jede Person mit „✏️ Teamnamen ändern“ den Namen des eigenen Teams ändern.
-- **Spielleitung:** In `/admin` unter „Teams & Punkte“ mit ✏️ jederzeit, auch während des Spiels.
-
-Die Farben kommen weiterhin aus `config.json`. Bei „Neues Spiel“ gelten wieder die Namen aus `config.json`.
+Die Teams heissen anfangs „Team 1“ und „Team 2“ (aus `config.json`). Beim Beitreten kann man den Namen des gewählten Teams direkt anpassen, in der Lobby zusätzlich mit „✏️ Teamnamen ändern“. Die Spielleitung kann die Namen in der Live-Steuerung jederzeit ändern. Bei „Neues Spiel“ gelten wieder die Startnamen.
 
 ## config.json
+
+Standardwerte. Titel, Name, Timer usw. kannst du im Admin-Tool unter „Einstellungen“ überschreiben.
 
 | Feld | Bedeutung |
 |---|---|
@@ -143,7 +147,7 @@ Die Farben kommen weiterhin aus `config.json`. Bei „Neues Spiel“ gelten wied
 
 1. TV öffnen und einmal klicken (Browser erlauben Ton erst nach einem Klick).
 2. Alle scannen den QR-Code, geben ihren Namen ein und wählen ein Team.
-3. In `/admin` das Geburtstagskind markieren (☑️) und **Spiel starten**.
+3. In `/admin` → Live-Steuerung das Geburtstagskind markieren (☑️) und **Spiel starten**.
 4. Die Person am Zug wählt auf dem Handy ein Feld, liest den Begriff und drückt **Start**.
 5. Gegner:innen kontrollieren und drücken bei Bedarf **„Regelverstoss!“** bzw. **„TABU!“**. Du entscheidest in `/admin`.
 6. Wenn alle Felder gespielt sind, kommt das Finale. Du kannst es in `/admin` auch vorzeitig auslösen.
@@ -153,7 +157,7 @@ Die Spielleitung kann jederzeit Punkte korrigieren, Runden abbrechen, Felder zur
 ## Testen (allein)
 
 - **`/tv?test=1`** erzeugt 6 Fake-Spieler:innen in 2 Teams, eine davon als Geburtstagskind.
-- In `/admin` gibt es bei jeder Person den Link **„📱 als Person öffnen“**. Er öffnet die Handy-Ansicht dieser Person in einem neuen Tab, so kannst du jede Rolle selbst spielen.
+- In `/admin` → Live-Steuerung gibt es bei jeder Person den Link **„📱 als Person öffnen“**. Er öffnet die Handy-Ansicht dieser Person in einem neuen Tab, so kannst du jede Rolle selbst spielen.
 - Mehrere `/join`-Tabs im selben Browser als verschiedene Personen: **`/join?multi=1`**. Die playerId liegt dann in sessionStorage statt localStorage.
 - Kurze Timer für Tests (nur lokal): `LEAGAME_TEST_SECONDS=10 npm start`
 
@@ -197,7 +201,7 @@ PUBLIC_URL=http://192.168.1.23:3000 npm start
 - Frontend: Vite + React + TypeScript (`client/`), Schrift Nunito lokal via `@fontsource`
 - API: `api/game.js` und `api/image.js` (Vercel Functions), gemeinsame Logik in `lib/`
 - Lokal: Express-Server (`server/index.js`), im Dev-Modus mit Vite-Middleware (Hot Reload)
-- Spielstand: Upstash Redis (Vercel) bzw. Arbeitsspeicher + `data/savegame.json` (lokal). Gleichzeitige Aktionen werden per Compare-and-set sicher zusammengeführt.
+- Spielstand und Spieldefinition: Upstash Redis (Vercel) bzw. `data/savegame.json`, `data/spiel.json` und `data/bilder/` (lokal). Hochgeladene Bilder liegen ebenfalls in der Datenbank. Gleichzeitige Aktionen werden per Compare-and-set sicher zusammengeführt.
 - Echtzeit: Polling (TV 0,5 s, Handys 0,8 s). Timer laufen mit Server-Zeitstempeln synchron auf allen Geräten.
 
 ## Getroffene Entscheidungen
@@ -213,3 +217,6 @@ PUBLIC_URL=http://192.168.1.23:3000 npm start
 - **Auflösung** bleibt `aufloesungSekunden` stehen (Standard 8 s), die Spielleitung kann mit „Weiter“ abkürzen.
 - **„Gespeichertes Spiel fortsetzen?“** fragen TV und Admin beim Öffnen, wenn schon ein Spiel mit Spieler:innen existiert. „Neues Spiel“ verlangt die Admin-PIN.
 - **Wake Lock:** Wo nicht unterstützt (ältere iPhones), erscheint ein Hinweis, die Auto-Sperre auszuschalten.
+- **Admin-Tool = Spiel bearbeiten:** Punkte und Spieler:innen sind nicht weg, sondern im Tab „Live-Steuerung“, weil man sie während des Spiels braucht (Regelverstoss, Klauen, Geburtstagskind).
+- **Strukturänderungen während des Spiels:** Neue Spalten/Zeilen sind sofort spielbar, gespielte Felder behalten ihren Stand. Doppelt-Felder werden nur vor dem Spielstart neu verteilt.
+- **Leere Felder** können nicht gewählt werden; der Server meldet das, statt eine leere Runde zu starten.
