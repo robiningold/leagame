@@ -1279,3 +1279,53 @@ a {
   outline: 10px solid var(--yellow);
   transform: scale(1.04);
 }
+
+/* ---------- Vorschläge als Tabelle ---------- */
+.sugg-group {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0 0 6px;
+  padding: 8px 14px;
+  border-radius: 14px;
+  background: var(--mc);
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.2);
+}
+.sugg-table {
+  width: 100%;
+  min-width: 760px;
+  table-layout: fixed;
+  border-collapse: collapse;
+  background: rgba(42, 30, 92, 0.35);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.sugg-table th {
+  text-align: left;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  opacity: 0.8;
+  padding: 8px 10px;
+}
+.sugg-table td {
+  padding: 8px 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  vertical-align: middle;
+}
+.sugg-table tr.st-angenommen td:first-child {
+  box-shadow: inset 5px 0 0 #3ddc84;
+}
+.sugg-table tr.st-abgelehnt {
+  opacity: 0.55;
+}
+.sugg-table tr.st-abgelehnt td:first-child {
+  box-shadow: inset 5px 0 0 #ff4d5e;
+}
+.sugg-table tr.st-offen td:first-child {
+  box-shadow: inset 5px 0 0 #ffcb2d;
+}
+.sugg-table .btn.small {
+  min-width: 44px;
+  font-size: 18px;
+}

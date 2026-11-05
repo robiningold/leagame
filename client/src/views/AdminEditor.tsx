@@ -325,68 +325,57 @@ function Settings({ def, defaults, update, pin }: { def: Def; defaults: Record<s
 // ---------------------------------------------------------------- Vorschläge
 type Review = (id: string, patch: { status?: Suggestion['status'] }) => void;
 
-function SuggestionCard({ s, pin, def, bday, onDelete, onReview }: { s: Suggestion; pin: string; def: Def; bday: string; onDelete: () => void; onReview: Review }) {
+/** Inhalt eines Vorschlags kompakt für die Tabelle */
+function SuggestionContent({ s, pin }: { s: Suggestion; pin: string }) {
   const e = s.entry;
-  const col = def.columns.find((c) => c.id === s.col);
-  const status = s.status || 'offen';
+  if (s.mode === 'quiz')
+    return (
+      <div>
+        <b>{e.frage}</b>
+        <div style={{ fontSize: 14, marginTop: 2 }}>
+          {e.optionen?.map((o, i) => (
+            <span key={i} style={{ marginRight: 10, color: i === e.richtig ? '#3DDC84' : undefined, fontWeight: i === e.richtig ? 900 : 500 }}>
+              {'ABCD'[i]}: {o}
+              {i === e.richtig ? ' ✓' : ''}
+            </span>
+          ))}
+        </div>
+      </div>
+    );
+  if (s.mode === 'guess') {
+    const src = e.datei ? `/api/image?file=${encodeURIComponent(e.datei)}&pin=${encodeURIComponent(pin)}` : '';
+    return (
+      <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+        {src && (
+          <a href={src} target="_blank" rel="noreferrer" title="Bild gross öffnen">
+            <img src={src} alt="" style={{ width: 96, height: 60, objectFit: 'cover', borderRadius: 8, display: 'block' }} />
+          </a>
+        )}
+        <div>
+          <b>{e.loesung}</b> <span className="muted">({e.kategorie})</span>
+        </div>
+      </div>
+    );
+  }
   return (
-    <div className="entry-card" style={{ outline: status === 'angenommen' ? '3px solid #3DDC84' : status === 'abgelehnt' ? '3px solid rgba(255,77,94,.7)' : undefined, opacity: status === 'abgelehnt' ? 0.7 : 1 }}>
-      <div className="row" style={{ justifyContent: 'space-between' }}>
-        <b style={{ fontSize: 18 }}>💡 von {s.von}</b>
-        <span className="muted" style={{ fontSize: 13 }}>
-          {new Date(s.at).toLocaleString('de-CH', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
-        </span>
-      </div>
-      <div className="muted" style={{ fontSize: 14 }}>
-        {col ? col.title.replace('{name}', bday) : '⚠️ Spalte gibt es nicht mehr – wird nicht gespielt'}
-      </div>
-      {s.mode === 'quiz' ? (
-        <>
-          <div style={{ fontWeight: 800 }}>{e.frage}</div>
-          <ol type="A" style={{ margin: 0 }}>
-            {e.optionen?.map((o, i) => (
-              <li key={i} style={{ color: i === e.richtig ? '#3DDC84' : undefined, fontWeight: i === e.richtig ? 800 : 500 }}>
-                {o}
-              </li>
-            ))}
-          </ol>
-        </>
-      ) : s.mode === 'guess' ? (
-        <>
-          {e.datei && <img src={`/api/image?file=${encodeURIComponent(e.datei)}&pin=${encodeURIComponent(pin)}`} alt="" style={{ width: '100%', borderRadius: 12 }} />}
-          <div>
-            <b>{e.loesung}</b> <span className="muted">({e.kategorie})</span>
-          </div>
-        </>
-      ) : (
-        <>
-          <div style={{ fontSize: 22, fontWeight: 800 }}>{e.begriff}</div>
-          {e.verboten?.length ? <div className="muted">Verboten: {e.verboten.join(', ')}</div> : null}
-        </>
-      )}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-        <button className={`btn small ${status === 'angenommen' ? 'green' : 'ghost'}`} style={{ minHeight: 48, fontSize: 18 }} onClick={() => onReview(s.id, { status: status === 'angenommen' ? 'offen' : 'angenommen' })}>
-          👍 {status === 'angenommen' ? 'Angenommen' : 'Annehmen'}
-        </button>
-        <button className={`btn small ${status === 'abgelehnt' ? 'red' : 'ghost'}`} style={{ minHeight: 48, fontSize: 18 }} onClick={() => onReview(s.id, { status: status === 'abgelehnt' ? 'offen' : 'abgelehnt' })}>
-          👎 {status === 'abgelehnt' ? 'Abgelehnt' : 'Ablehnen'}
-        </button>
-      </div>
-      <div className="row" style={{ justifyContent: 'space-between' }}>
-        <span className="muted" style={{ fontSize: 13 }}>{s.test ? '🧪 Testdaten' : ''}</span>
-        <button className="btn small ghost" onClick={onDelete} title="Ganz löschen">
-          🗑️
-        </button>
-      </div>
+    <div>
+      <b>{e.begriff}</b>
+      {e.verboten?.length ? <div className="muted" style={{ fontSize: 14 }}>Verboten: {e.verboten.join(', ')}</div> : null}
     </div>
   );
 }
 
 function SuggestionsPanel({ pin, def, suggestions, bday, onDelete, onReview, onRefresh, onDeleteTest, open, setOpen }: { pin: string; def: Def; suggestions: Suggestion[]; bday: string; onDelete: (id: string) => void; onReview: Review; onRefresh: () => void; onDeleteTest: () => void; open: boolean; setOpen: (v: boolean) => void }) {
-  const [filter, setFilter] = useState<'offen' | 'angenommen' | 'abgelehnt'>('offen');
+  const [filter, setFilter] = useState<'alle' | 'offen' | 'angenommen' | 'abgelehnt'>('alle');
   const url = `${location.origin}/vorschlag`;
-  const count = (st: string) => suggestions.filter((x) => (x.status || 'offen') === st).length;
-  const shown = suggestions.filter((x) => (x.status || 'offen') === filter);
+  const count = (st: string) => (st === 'alle' ? suggestions.length : suggestions.filter((x) => (x.status || 'offen') === st).length);
+  const shown = suggestions.filter((x) => filter === 'alle' || (x.status || 'offen') === filter);
+  // Nach Kategorien gruppieren (Reihenfolge wie im Spiel), unbekannte Kategorien am Schluss
+  const modes = modeInfo(bday);
+  const groups = [
+    ...def.columns.map((c) => ({ id: c.id, title: c.title.replace('{name}', bday), icon: modes[c.mode].icon, color: modes[c.mode].color, items: shown.filter((x) => x.col === c.id) })),
+    { id: '_ohne', title: 'Kategorie gelöscht (wird nicht gespielt)', icon: '⚠️', color: '#7d7a96', items: shown.filter((x) => !def.columns.some((c) => c.id === x.col)) },
+  ].filter((g) => g.items.length);
   return (
     <div className="panel" style={count('offen') ? { boxShadow: '0 0 0 4px #FFCB2D, 0 12px 30px rgba(20,10,70,.35)' } : undefined}>
       <div className="row" style={{ justifyContent: 'space-between' }}>
@@ -418,18 +407,76 @@ function SuggestionsPanel({ pin, def, suggestions, bday, onDelete, onReview, onR
         Nur 👍 angenommene Vorschläge kommen ins Spiel. Wählt die Person am Zug eine Kategorie, wird daraus zufällig ein Vorschlag gezogen, jeder nur einmal pro Spiel. Er kommt nie beim Team der Person dran, die ihn eingereicht hat.
       </p>
       <div className="tabs" style={{ marginBottom: 12 }}>
-        {(['offen', 'angenommen', 'abgelehnt'] as const).map((f) => (
+        {(['alle', 'offen', 'angenommen', 'abgelehnt'] as const).map((f) => (
           <button key={f} className={filter === f ? 'sel' : ''} onClick={() => setFilter(f)}>
-            {f === 'offen' ? '🕓 Offen' : f === 'angenommen' ? '👍 Angenommen' : '👎 Abgelehnt'} ({count(f)})
+            {f === 'alle' ? 'Alle' : f === 'offen' ? '🕓 Offen' : f === 'angenommen' ? '👍 Angenommen' : '👎 Abgelehnt'} ({count(f)})
           </button>
         ))}
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 12 }}>
-        {shown.length === 0 && <p className="muted">Keine Vorschläge in dieser Liste.</p>}
-        {shown.map((x) => (
-          <SuggestionCard key={x.id} s={x} pin={pin} def={def} bday={bday} onDelete={() => onDelete(x.id)} onReview={onReview} />
-        ))}
-      </div>
+      {shown.length === 0 && <p className="muted">Keine Vorschläge in dieser Liste.</p>}
+      {groups.map((g) => (
+        <div key={g.id} style={{ marginBottom: 18 }}>
+          <h3 className="sugg-group" style={{ '--mc': g.color } as any}>
+            <span>
+              {g.icon} {g.title}
+            </span>
+            <span style={{ fontSize: 14, fontWeight: 700 }}>
+              {g.items.length} {g.items.length === 1 ? 'Vorschlag' : 'Vorschläge'}
+            </span>
+          </h3>
+          <div style={{ overflowX: 'auto' }}>
+            <table className="sugg-table">
+              <colgroup>
+                <col style={{ width: '42%' }} />
+                <col style={{ width: '14%' }} />
+                <col style={{ width: '12%' }} />
+                <col style={{ width: '14%' }} />
+                <col style={{ width: '18%' }} />
+              </colgroup>
+              <thead>
+                <tr>
+                  <th>Vorschlag</th>
+                  <th>Von</th>
+                  <th>Eingereicht</th>
+                  <th>Status</th>
+                  <th>Entscheiden</th>
+                </tr>
+              </thead>
+              <tbody>
+                {g.items.map((x) => {
+                  const st = x.status || 'offen';
+                  return (
+                    <tr key={x.id} className={`st-${st}`}>
+                      <td style={{ minWidth: 260 }}>
+                        <SuggestionContent s={x} pin={pin} />
+                      </td>
+                      <td style={{ whiteSpace: 'nowrap' }}>
+                        <b>{x.von}</b>
+                        {x.test && <div className="muted" style={{ fontSize: 12 }}>🧪 Testdaten</div>}
+                      </td>
+                      <td style={{ whiteSpace: 'nowrap', fontSize: 14 }}>{new Date(x.at).toLocaleString('de-CH', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</td>
+                      <td style={{ whiteSpace: 'nowrap' }}>{st === 'angenommen' ? '👍 angenommen' : st === 'abgelehnt' ? '👎 abgelehnt' : '🕓 offen'}</td>
+                      <td>
+                        <div style={{ display: 'flex', gap: 6 }}>
+                          <button className={`btn small ${st === 'angenommen' ? 'green' : 'ghost'}`} title={st === 'angenommen' ? 'Zurück auf offen' : 'Annehmen'} onClick={() => onReview(x.id, { status: st === 'angenommen' ? 'offen' : 'angenommen' })}>
+                            👍
+                          </button>
+                          <button className={`btn small ${st === 'abgelehnt' ? 'red' : 'ghost'}`} title={st === 'abgelehnt' ? 'Zurück auf offen' : 'Ablehnen'} onClick={() => onReview(x.id, { status: st === 'abgelehnt' ? 'offen' : 'abgelehnt' })}>
+                            👎
+                          </button>
+                          <button className="btn small ghost" title="Ganz löschen" onClick={() => onDelete(x.id)}>
+                            🗑️
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

@@ -79,7 +79,7 @@ Kein Jeopardy-Brett, keine vorgefertigten Inhalte: **Alle Begriffe, Songs, Bilde
 
 `/admin` → Tab **„✏️ Spiel bearbeiten“**. Alles wird automatisch gespeichert (in der Datenbank) und gilt sofort, ohne neuen Deploy.
 
-- **💡 Vorschläge von Gästen** (ganz oben): Filter Offen / Angenommen / Abgelehnt, bei jedem Vorschlag Name und Zeit, 👍 / 👎, 🗑️ zum Löschen. Mit „Neue Vorschläge annehmen“ schliesst du die Vorschlagsseite. Die Liste aktualisiert sich alle 15 Sekunden.
+- **💡 Vorschläge von Gästen** (ganz oben): pro Kategorie eine Tabelle mit Vorschlag, Name, Zeit und Status; Filter Alle / Offen / Angenommen / Abgelehnt; 👍 / 👎 / 🗑️ in jeder Zeile. Mit „Neue Vorschläge annehmen“ schliesst du die Vorschlagsseite. Die Liste aktualisiert sich alle 15 Sekunden.
 - **Kategorien:** Titel und Spielmodus frei wählbar (Pantomime, Tabu, Malen, Emoji, Guess the ___, Quiz über das Geburtstagskind, Song summen), hinzufügen, verschieben, löschen. Ein Modus darf mehrfach vorkommen. `{name}` wird durch den Namen des Geburtstagskinds ersetzt.
 - **Einstellungen:** Titel, Name Geburtstagskind, Punkte pro richtige Antwort, Rundendauer, Klauen, Finaltext, Finale-Foto. Leere Felder = Standardwert aus `config.json`.
 - **Sicherung:** Kategorien und Vorschläge als Datei herunterladen.
