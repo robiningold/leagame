@@ -61,7 +61,7 @@ Entwickeln mit Hot Reload:
 npm run dev
 ```
 
-Alles ist offline lauffähig: Schrift (Fredoka) und QR-Code sind eingebaut, Sounds werden per Web Audio erzeugt.
+Alles ist offline lauffähig: Schrift (Nunito) und QR-Code sind eingebaut, Sounds werden per Web Audio erzeugt.
 
 ---
 
@@ -194,7 +194,7 @@ PUBLIC_URL=http://192.168.1.23:3000 npm start
 
 ## Technik
 
-- Frontend: Vite + React + TypeScript (`client/`), Schrift Fredoka lokal via `@fontsource`
+- Frontend: Vite + React + TypeScript (`client/`), Schrift Nunito lokal via `@fontsource`
 - API: `api/game.js` und `api/image.js` (Vercel Functions), gemeinsame Logik in `lib/`
 - Lokal: Express-Server (`server/index.js`), im Dev-Modus mit Vite-Middleware (Hot Reload)
 - Spielstand: Upstash Redis (Vercel) bzw. Arbeitsspeicher + `data/savegame.json` (lokal). Gleichzeitige Aktionen werden per Compare-and-set sicher zusammengeführt.

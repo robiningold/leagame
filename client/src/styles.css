@@ -31,8 +31,8 @@ body,
 body {
   background: var(--bg);
   color: var(--white);
-  font-family: 'Fredoka', system-ui, sans-serif;
-  font-weight: 500;
+  font-family: 'Nunito', system-ui, sans-serif;
+  font-weight: 600;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   user-select: none;
@@ -112,9 +112,10 @@ a {
   border: none;
   background: var(--yellow);
   color: var(--ink);
-  font-weight: 700;
+  font-weight: 800;
   font-size: 22px;
   min-height: 56px;
+  text-decoration: none;
   padding: 12px 26px;
   border-radius: 20px;
   box-shadow: 0 6px 0 #c99a10, 0 10px 18px rgba(0, 0, 0, 0.25);
@@ -212,7 +213,7 @@ a {
 }
 
 .title {
-  font-weight: 700;
+  font-weight: 900;
   letter-spacing: 0.5px;
   text-shadow: 0 4px 0 rgba(42, 30, 92, 0.35);
 }
@@ -284,7 +285,7 @@ a {
 }
 .pin-big {
   font-size: 120px;
-  font-weight: 700;
+  font-weight: 900;
   letter-spacing: 16px;
   line-height: 1;
   color: var(--yellow);
@@ -351,7 +352,7 @@ a {
 }
 .score-card .name {
   font-size: 36px;
-  font-weight: 600;
+  font-weight: 800;
   text-shadow: 0 2px 0 rgba(0, 0, 0, 0.2);
   white-space: nowrap;
   overflow: hidden;
@@ -359,7 +360,7 @@ a {
 }
 .score-card .pts {
   font-size: 72px;
-  font-weight: 700;
+  font-weight: 900;
   text-shadow: 0 4px 0 rgba(0, 0, 0, 0.2);
 }
 
@@ -373,7 +374,7 @@ a {
   border-radius: 22px;
   padding: 10px 6px;
   text-align: center;
-  font-weight: 700;
+  font-weight: 900;
   font-size: 30px;
   line-height: 1.05;
   color: #fff;
@@ -397,7 +398,7 @@ a {
   align-items: center;
   justify-content: center;
   font-size: 72px;
-  font-weight: 700;
+  font-weight: 900;
   height: 128px;
   box-shadow: var(--shadow);
   border: none;
@@ -472,7 +473,7 @@ a {
   gap: 24px;
   padding: 18px 36px;
   font-size: 52px;
-  font-weight: 700;
+  font-weight: 900;
   text-shadow: 0 3px 0 rgba(0, 0, 0, 0.2);
 }
 .round-head .val {
@@ -508,7 +509,7 @@ a {
 }
 .big-text {
   font-size: 96px;
-  font-weight: 700;
+  font-weight: 900;
   line-height: 1.05;
 }
 .mid-text {
@@ -534,7 +535,7 @@ a {
   align-items: center;
   justify-content: center;
   font-size: 110px;
-  font-weight: 700;
+  font-weight: 900;
 }
 .timer-ring.urgent {
   animation: pulse 1s ease-in-out infinite;
@@ -633,7 +634,7 @@ a {
 
 .result-badge {
   font-size: 64px;
-  font-weight: 700;
+  font-weight: 900;
   border-radius: 30px;
   padding: 12px 40px;
   animation: popin 0.5s cubic-bezier(0.3, 1.6, 0.6, 1);
@@ -650,7 +651,7 @@ a {
 }
 .double-flash div {
   font-size: 220px;
-  font-weight: 700;
+  font-weight: 900;
   color: var(--yellow);
   text-shadow: 0 10px 0 var(--ink), 0 0 60px rgba(255, 203, 45, 0.8);
   animation: doublePop 1.5s cubic-bezier(0.3, 1.5, 0.5, 1) forwards;
@@ -750,7 +751,7 @@ a {
 }
 .phone .term {
   font-size: 44px;
-  font-weight: 700;
+  font-weight: 900;
   line-height: 1.1;
   word-break: break-word;
 }
@@ -765,11 +766,11 @@ a {
   border-radius: 14px;
   padding: 8px 14px;
   font-size: 28px;
-  font-weight: 700;
+  font-weight: 900;
 }
 .phone .timer-mini {
   font-size: 40px;
-  font-weight: 700;
+  font-weight: 900;
   text-align: center;
 }
 .phone .timer-mini.urgent {
@@ -782,7 +783,7 @@ a {
   border-radius: 22px;
   border: 5px solid transparent;
   color: #fff;
-  font-weight: 700;
+  font-weight: 900;
   background: var(--tc);
   box-shadow: 0 6px 0 rgba(0, 0, 0, 0.25);
 }
@@ -807,7 +808,7 @@ a {
   min-height: 56px;
   border: none;
   border-radius: 12px;
-  font-weight: 700;
+  font-weight: 900;
   font-size: 17px;
   color: #fff;
   background: linear-gradient(135deg, var(--blue-a), var(--blue-b));
