@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { postAction, useGame } from '../api';
-import { Background, DRAW_COLORS, DRAW_SIZES, ERASER, MiniBoard, TimerText, makeRenderer, modeOf, playerOf, teamOf, useWakeLock, type DrawOp } from '../components';
+import { BackButton, Background, DRAW_COLORS, DRAW_SIZES, ERASER, MiniBoard, TimerText, makeRenderer, modeOf, playerOf, teamOf, useWakeLock, type DrawOp } from '../components';
 import { EMOJI_CATEGORIES } from '../emojis';
 import { HOW_TEXT } from '../modes';
 import { sfx, unlockAudio } from '../sound';
@@ -79,10 +79,14 @@ export default function Join() {
         {!me && playerId && view.askedFor !== playerId ? (
           <h1 style={{ textAlign: 'center', marginTop: 40 }}>Verbinde …</h1>
         ) : !me ? (
+          <>
+          <BackButton />
           <JoinForm view={view} pinParam={pinParam} onJoined={(id) => setPlayerId(id)} />
+          </>
         ) : (
           <>
             <TopBar view={view} />
+            {view.phase === 'lobby' && <BackButton />}
             {view.phase === 'lobby' && <LobbyWait view={view} wakeLockSupported={wakeLockSupported} run={run} />}
             {view.phase === 'board' && !view.round && <BoardTurn view={view} run={run} />}
             {view.phase === 'board' && view.round && <PlayerRound view={view} round={view.round} run={run} />}

@@ -367,3 +367,12 @@ export function modeOf(view: View, m: Mode) {
   return modeInfo(view.bdayName)[m];
 }
 export { serverNow };
+
+/** Zurück zur Startseite (Menü) */
+export function BackButton({ style }: { style?: any }) {
+  return (
+    <a className="btn small ghost back-btn" href="/" style={style}>
+      ← Zurück
+    </a>
+  );
+}

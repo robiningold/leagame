@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { postAction } from '../api';
-import { Background } from '../components';
+import { BackButton, Background } from '../components';
 import { shrinkImage } from '../image';
 import { modeInfo } from '../modes';
 import type { Mode } from '../types';
@@ -232,7 +232,10 @@ function Shell({ children }: { children: any }) {
   return (
     <div className="app">
       <Background count={6} />
-      <div className="phone">{children}</div>
+      <div className="phone">
+        <BackButton />
+        {children}
+      </div>
     </div>
   );
 }

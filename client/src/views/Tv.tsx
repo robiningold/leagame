@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import QRCode from 'qrcode';
 import { guessStage, postAction, useGame, useNow, GUESS_FACTORS } from '../api';
-import { AnimatedNumber, Background, Confetti, DrawView, GuessImage, TimerRing, modeOf, playerOf, teamOf } from '../components';
+import { AnimatedNumber, BackButton, Background, Confetti, DrawView, GuessImage, TimerRing, modeOf, playerOf, teamOf } from '../components';
 import { HOW_TEXT, modeInfo } from '../modes';
 import { audioReady, sfx, unlockAudio } from '../sound';
 import type { Round, View } from '../types';
@@ -72,6 +72,7 @@ export default function Tv() {
       <Background count={14} />
       <div className="tv-stage" style={{ transform: `translate(-50%, -50%) scale(${scale})` }}>
         {view.phase === 'lobby' && <Lobby view={view} />}
+        {view.phase === 'lobby' && <BackButton style={{ position: 'absolute', left: 24, top: 20, zIndex: 40, fontSize: 22 }} />}
         {view.phase === 'board' && <BoardScreen view={view} />}
         {view.phase === 'final' && <Final view={view} />}
         <TvSounds view={view} />

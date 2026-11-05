@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { postAction, useGame } from '../api';
-import { Background, DrawView, MiniBoard, TimerText, modeOf, playerOf, teamOf } from '../components';
+import { BackButton, Background, DrawView, MiniBoard, TimerText, modeOf, playerOf, teamOf } from '../components';
 import { HOW_TEXT } from '../modes';
 import type { Round, View } from '../types';
 import Editor from './AdminEditor';
@@ -35,6 +35,7 @@ function Login({ onOk }: { onOk: (pin: string) => void }) {
     <div className="app">
       <Background count={6} />
       <div className="phone" style={{ justifyContent: 'center' }}>
+        <BackButton />
         <div className="panel" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           <h1>🔐 Spielleitung</h1>
           <input className="input" type="password" inputMode="numeric" placeholder="Admin-PIN" value={pin} onChange={(e) => setPin(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && go()} />
@@ -89,6 +90,7 @@ function AdminPanel({ pin, onLogout }: { pin: string; onLogout: () => void }) {
   if (!view)
     return (
       <div className="admin">
+        <BackButton />
         {error && error !== 'Falsche Admin-PIN.' ? (
           <>
             <div className="error">Fehler vom Server: {error}</div>
@@ -112,9 +114,12 @@ function AdminPanel({ pin, onLogout }: { pin: string; onLogout: () => void }) {
       {offline && <div className="offline-banner">Keine Verbindung zum Server …</div>}
       <div className="admin">
         <div className="row" style={{ justifyContent: 'space-between' }}>
-          <h1 className="title" style={{ margin: 0 }}>
-            🎛️ {view.title}
-          </h1>
+          <div className="row">
+            <BackButton />
+            <h1 className="title" style={{ margin: 0 }}>
+              🎛️ {view.title}
+            </h1>
+          </div>
           <div className="row">
             <span className="pill">PIN {view.gamePin}</span>
             <span className="pill">{phaseText(view)}</span>
