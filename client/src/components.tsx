@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import type { Cell, Mode, Timer, View } from './types';
+import type { Mode, Timer, View } from './types';
 import { remaining, serverNow, useNow } from './api';
 import { modeInfo } from './modes';
 import { sfx } from './sound';
@@ -161,31 +161,23 @@ export function TimerText({ timer }: { timer: Timer | null }) {
   return <div className={`timer-mini ${secs <= 10 ? 'urgent' : ''}`}>⏱ {secs}s{timer && !timer.endsAt ? ' ⏸' : ''}</div>;
 }
 
-// ---------------------------------------------------------------- Mini-Board (Handy, Admin)
-export function MiniBoard({ view, onPick, disabled, showDoubles }: { view: View; onPick?: (c: Cell) => void; disabled?: boolean; showDoubles?: boolean }) {
+// ---------------------------------------------------------------- Kategorien wählen (Handy, Admin)
+export function CategoryPicker({ view, onPick, disabled, admin }: { view: View; onPick?: (colId: string) => void; disabled?: boolean; admin?: boolean }) {
   const modes = modeInfo(view.bdayName);
-  const team = (id: string | null) => view.teams.find((t) => t.id === id);
-  const cols = view.board.columns;
   return (
-    <div className="mini-board" style={{ gridTemplateColumns: `repeat(${cols.length}, 1fr)` }}>
-      {cols.map((col) => (
-        <div key={col.id} className="h" style={{ '--mc': modes[col.mode].color } as any} title={col.title}>
-          {col.title}
-        </div>
-      ))}
-      {view.board.values.map((v) =>
-        cols.map((col) => {
-          const c = view.cells.find((x) => x.col === col.id && x.value === v);
-          if (!c) return <div key={col.id + v} />;
-          const isDouble = showDoubles && view.doubles?.includes(c.id);
-          return (
-            <button key={c.id} disabled={(disabled || c.played) && !(showDoubles && c.played)} style={c.played ? ({ '--wc': team(c.wonBy)?.farbe || '#6f6a8f', background: team(c.wonBy)?.farbe || '#6f6a8f', opacity: 0.5 } as any) : undefined} onClick={() => onPick?.(c)}>
-              {c.played ? (c.points ? c.points : '–') : v}
-              {isDouble ? '×2' : ''}
-            </button>
-          );
-        }),
-      )}
+    <div className="cat-grid">
+      {view.board.columns.map((col) => {
+        const empty = col.available === 0;
+        return (
+          <button key={col.id} className="cat-btn" style={{ '--mc': modes[col.mode].color } as any} disabled={disabled || empty} onClick={() => onPick?.(col.id)}>
+            <span className="ic">{modes[col.mode].icon}</span>
+            <span className="t">{col.title}</span>
+            <span className="n">
+              {empty ? (col.remaining ? 'nur eigene Vorschläge' : 'leer') : admin ? `${col.available} von ${col.remaining}` : `noch ${col.available}`}
+            </span>
+          </button>
+        );
+      })}
     </div>
   );
 }

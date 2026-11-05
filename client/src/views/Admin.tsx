@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { postAction, useGame } from '../api';
-import { BackButton, Background, DrawView, MiniBoard, TimerText, modeOf, playerOf, teamOf } from '../components';
+import { BackButton, Background, DrawView, CategoryPicker, TimerText, modeOf, playerOf, teamOf } from '../components';
 import { HOW_TEXT } from '../modes';
 import type { Round, View } from '../types';
 import Editor from './AdminEditor';
@@ -157,7 +157,7 @@ function AdminPanel({ pin, onLogout }: { pin: string; onLogout: () => void }) {
           <div className="panel blue">
             <h2>Gespeichertes Spiel fortsetzen?</h2>
             <p>
-              {view.players.length} Spieler:innen, {view.cells.filter((c) => c.played).length} von {view.cells.length} Feldern gespielt.
+              {view.players.length} Spieler:innen, {view.playedCount} Runden gespielt.
             </p>
             <div className="row">
               <button className="btn" onClick={() => { sessionStorage.setItem('leagame.adminResumeOk', view.gameId); setResumeOk(view.gameId); }}>
@@ -227,7 +227,7 @@ function AdminPanel({ pin, onLogout }: { pin: string; onLogout: () => void }) {
                   🏁 Spiel beenden
                 </button>
               )}
-              {view.phase === 'final' && view.cells.some((c) => !c.played) && (
+              {view.phase === 'final' && view.totalRemaining > 0 && (
                 <button className="btn small" onClick={() => run('backToBoard')}>
                   ↩️ Zurück zum Board
                 </button>
@@ -247,17 +247,14 @@ function AdminPanel({ pin, onLogout }: { pin: string; onLogout: () => void }) {
               </p>
             )}
             <p className="muted" style={{ fontSize: 15 }}>
-              Board: freies Feld antippen = für die Person am Zug wählen. Gespieltes Feld antippen = zurücksetzen (Punkte werden abgezogen). ×2 = Doppelt-Feld (nur hier sichtbar).
+              Kategorie antippen = für die Person am Zug wählen. Zahl = Vorschläge, die das Team am Zug ziehen darf / insgesamt übrig. Gespielt: {view.playedCount} Runden, übrig: {view.totalRemaining} Vorschläge.
             </p>
-            <MiniBoard
+            <CategoryPicker
               view={view}
-              showDoubles
-              onPick={(c) => {
-                if (c.played) {
-                  if (confirm(`Feld ${colTitle(view, c.col)} ${c.value} zurücksetzen?`)) run('resetCell', { cellId: c.id });
-                } else if (view.phase === 'board' && !r) {
-                  if (confirm(`Feld ${colTitle(view, c.col)} ${c.value} für ${playerOf(view, view.current.playerId)?.name} wählen?`)) run('pick', { cellId: c.id });
-                }
+              admin
+              disabled={view.phase !== 'board' || !!r}
+              onPick={(colId) => {
+                if (confirm(`Kategorie „${colTitle(view, colId)}“ für ${playerOf(view, view.current.playerId)?.name} wählen?`)) run('pick', { colId });
               }}
             />
           </div>
@@ -276,7 +273,7 @@ const colTitle = (view: View, colId: string) => view.board.columns.find((c) => c
 function phaseText(view: View) {
   if (view.phase === 'lobby') return 'Lobby';
   if (view.phase === 'final') return 'Finale';
-  return view.round ? `Runde: ${view.round.stage}` : 'Board';
+  return view.round ? `Runde: ${view.round.stage}` : 'Spiel läuft';
 }
 
 function RoundControl({ view, round, run }: { view: View; round: Round; run: (t: string, p?: any) => any }) {
@@ -289,8 +286,7 @@ function RoundControl({ view, round, run }: { view: View; round: Round; run: (t:
   return (
     <div className="panel" style={{ background: mode.color }}>
       <h2>
-        {mode.icon} {round.title || mode.label} {round.value}
-        {round.double ? ' ×2 (DOPPELT)' : ''} – {active?.name} ({team?.name})
+        {mode.icon} {round.title || mode.label} – {active?.name} ({team?.name})
       </h2>
       <div className="grid2">
         <div className="panel dark">

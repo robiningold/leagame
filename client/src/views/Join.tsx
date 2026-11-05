@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { postAction, useGame } from '../api';
-import { BackButton, Background, DRAW_COLORS, DRAW_SIZES, ERASER, MiniBoard, TimerText, makeRenderer, modeOf, playerOf, teamOf, useWakeLock, type DrawOp } from '../components';
+import { BackButton, Background, DRAW_COLORS, DRAW_SIZES, ERASER, CategoryPicker, TimerText, makeRenderer, modeOf, playerOf, teamOf, useWakeLock, type DrawOp } from '../components';
 import { EMOJI_CATEGORIES } from '../emojis';
 import { HOW_TEXT } from '../modes';
 import { sfx, unlockAudio } from '../sound';
@@ -253,7 +253,7 @@ function BoardTurn({ view, run }: { view: View; run: (t: string, p?: any) => any
         {myTurn ? (
           <>
             <h1>Du bist dran! 🎯</h1>
-            <div>Wähle ein freies Feld:</div>
+            <div>Wähle eine Kategorie. Daraus wird zufällig ein Vorschlag gezogen.</div>
           </>
         ) : (
           <>
@@ -264,7 +264,7 @@ function BoardTurn({ view, run }: { view: View; run: (t: string, p?: any) => any
           </>
         )}
       </div>
-      <MiniBoard view={view} disabled={!myTurn} onPick={(c) => myTurn && run('pick', { cellId: c.id })} />
+      <CategoryPicker view={view} disabled={!myTurn} onPick={(colId) => myTurn && run('pick', { colId })} />
     </>
   );
 }
@@ -286,8 +286,7 @@ function PlayerRound({ view, round, run }: { view: View; round: Round; run: (t: 
       </span>
       <b style={{ fontSize: 24, flex: 1 }}>{round.title || mode.label}</b>
       <b style={{ fontSize: 24 }}>
-        {round.value}
-        {round.double ? ' ×2' : ''}
+        {round.mode === 'guess' ? `bis ${round.value * 2}` : round.value} P.
       </b>
     </div>
   );

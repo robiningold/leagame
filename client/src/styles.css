@@ -1188,3 +1188,94 @@ a {
   min-height: 44px;
   font-size: 16px;
 }
+
+/* ---------- Kategorien ---------- */
+.cat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 10px;
+}
+.cat-btn {
+  border: none;
+  border-radius: 20px;
+  background: var(--mc);
+  color: #fff;
+  min-height: 110px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-family: inherit;
+  box-shadow: 0 6px 0 rgba(0, 0, 0, 0.22);
+  cursor: pointer;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.2);
+}
+.cat-btn:active {
+  transform: translateY(4px);
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.22);
+}
+.cat-btn:disabled {
+  filter: grayscale(0.8);
+  opacity: 0.45;
+  cursor: default;
+}
+.cat-btn .ic {
+  font-size: 36px;
+}
+.cat-btn .t {
+  font-size: 18px;
+  font-weight: 900;
+  line-height: 1.1;
+}
+.cat-btn .n {
+  font-size: 13px;
+  font-weight: 700;
+  opacity: 0.9;
+}
+.tv-cats {
+  display: grid;
+  gap: 24px;
+  padding: 24px 48px;
+  flex: 1;
+  min-height: 0;
+}
+.tv-cat {
+  border-radius: 32px;
+  background: var(--mc);
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #fff;
+  text-shadow: 0 4px 0 rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s, opacity 0.3s;
+  min-height: 0;
+}
+.tv-cat .ic {
+  font-size: 96px;
+  line-height: 1;
+}
+.tv-cat .t {
+  font-size: 56px;
+  font-weight: 900;
+  text-align: center;
+  line-height: 1.05;
+  padding: 0 16px;
+}
+.tv-cat .n {
+  font-size: 34px;
+  font-weight: 700;
+  opacity: 0.9;
+}
+.tv-cat.empty {
+  opacity: 0.35;
+  filter: grayscale(0.7);
+}
+.tv-cat.picked {
+  outline: 10px solid var(--yellow);
+  transform: scale(1.04);
+}

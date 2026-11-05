@@ -19,16 +19,8 @@ export interface Column {
   id: string;
   mode: Mode;
   title: string;
-}
-export interface Cell {
-  id: string;
-  col: string;
-  mode: Mode;
-  value: number;
-  played: boolean;
-  wonBy: string | null;
-  points: number;
-  double: boolean;
+  remaining: number; // angenommene, noch nicht gespielte Vorschläge
+  available: number; // davon für das Team am Zug erlaubt
 }
 export interface Timer {
   durMs: number;
@@ -90,9 +82,10 @@ export interface View {
   roundSeconds: number;
   teams: Team[];
   players: Player[];
-  cells: Cell[];
-  board: { columns: Column[]; values: number[] };
-  emptyCells?: string[];
+  board: { columns: Column[] };
+  points: number;
+  playedCount: number;
+  totalRemaining: number;
   current: { playerId: string | null; teamId: string | null };
   round: Round | null;
   started: boolean;
@@ -101,7 +94,6 @@ export interface View {
   hasFinalePhoto: boolean;
   storage: 'redis' | 'local';
   isAdmin?: boolean;
-  doubles?: string[];
   askedFor?: string | null;
   me?: { id: string; name: string; teamId: string; bday: boolean } | null;
   mySide?: 'active' | 'team' | 'steal' | 'opponent';

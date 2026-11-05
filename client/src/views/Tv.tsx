@@ -81,7 +81,7 @@ export default function Tv() {
             <div className="panel" style={{ padding: 60, textAlign: 'center', width: 1100 }}>
               <div className="big-text" style={{ fontSize: 72 }}>Gespeichertes Spiel fortsetzen?</div>
               <p className="mid-text muted" style={{ fontSize: 36 }}>
-                {view.players.length} Spieler:innen · {view.cells.filter((c) => c.played).length} von {view.cells.length} Feldern gespielt
+                {view.players.length} Spieler:innen · {view.playedCount} Runden gespielt
               </p>
               <div style={{ display: 'flex', gap: 30, justifyContent: 'center' }}>
                 <button className="btn big" style={{ width: 420 }} onClick={() => { unlockAudio(); setSoundOn(true); confirmResume(); }}>
@@ -95,7 +95,7 @@ export default function Tv() {
           </div>
         )}
         {!soundOn && !needResume && (
-          <div style={{ position: 'absolute', right: 30, top: 20, zIndex: 40, fontSize: 24 }} className="pill">
+          <div style={{ position: 'absolute', ...(view.phase === 'lobby' ? { right: 30 } : { left: 30 }), top: 20, zIndex: 40, fontSize: 24 }} className="pill">
             🔇 Klicke irgendwo, um den Ton einzuschalten
           </div>
         )}
@@ -183,43 +183,24 @@ function BoardScreen({ view }: { view: View }) {
   const cur = playerOf(view, view.current.playerId);
   const curTeam = teamOf(view, view.current.teamId);
   const cols = view.board.columns;
-  const rows = view.board.values;
-  // Feldhöhe so wählen, dass alle Zeilen ohne Scrollen auf 1080px passen
-  const cellH = Math.min(128, Math.floor((1080 - 130 - 70 - 32 - 112 - 14 * rows.length) / rows.length));
-  const cellFont = Math.min(72, Math.round(cellH * 0.82)); // min. ~64px auch bei 8 Zeilen
+  // Kacheln in 1–3 Reihen anordnen, damit alles ohne Scrollen passt
+  const perRow = cols.length <= 4 ? cols.length : Math.ceil(cols.length / (cols.length <= 8 ? 2 : 3));
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <ScoreBar view={view} />
-      <div className="board" style={{ gridTemplateColumns: `repeat(${cols.length}, 1fr)` }}>
+      <div className="tv-cats" style={{ gridTemplateColumns: `repeat(${perRow}, 1fr)` }}>
         {cols.map((col) => (
-          <div key={col.id} className="head" style={{ '--mc': modes[col.mode].color, fontSize: cols.length > 6 ? 24 : 30 } as any}>
+          <div key={col.id} data-cell={col.id} className={`tv-cat ${col.remaining ? '' : 'empty'} ${view.round?.col === col.id ? 'picked' : ''}`} style={{ '--mc': modes[col.mode].color } as any}>
             <span className="ic">{modes[col.mode].icon}</span>
-            <span>{col.title}</span>
+            <span className="t">{col.title}</span>
+            <span className="n">{col.remaining ? `noch ${col.remaining}` : 'leer'}</span>
           </div>
         ))}
-        {rows.map((v) =>
-          cols.map((col) => {
-            const c = view.cells.find((x) => x.col === col.id && x.value === v);
-            if (!c) return <div key={col.id + v} />;
-            const won = teamOf(view, c.wonBy);
-            return (
-              <div
-                key={c.id}
-                data-cell={c.id}
-                className={`cell ${c.played ? 'played' : ''} ${view.round?.cellId === c.id ? 'picked' : ''}`}
-                style={{ height: cellH, fontSize: c.played ? cellFont * 0.6 : cellFont, ...(c.played ? ({ '--wc': won?.farbe || '#7d7a96' } as any) : {}) }}
-              >
-                {c.played ? (c.points ? `+${c.points}` : '') : v}
-                {c.played && c.double && <span className="x2">×2</span>}
-              </div>
-            );
-          }),
-        )}
       </div>
       <div className="turnbar">
         {cur ? (
           <>
-            Am Zug: <b>{cur.name}</b> <span style={{ color: curTeam?.farbe }}>({curTeam?.name})</span>
+            Runde {view.playedCount + 1} · Am Zug: <b>{cur.name}</b> <span style={{ color: curTeam?.farbe }}>({curTeam?.name})</span> wählt eine Kategorie
           </>
         ) : (
           'Warte auf Spieler:innen …'
@@ -273,8 +254,7 @@ function RoundOverlay({ view, round }: { view: View; round: Round }) {
           </span>
           <span>{round.title || mode.label}</span>
           <span className="val">
-            {round.value}
-            {round.double && <span style={{ color: '#FFCB2D' }}> ×2</span>}
+            {round.mode === 'guess' ? `bis ${round.value * 2}` : round.value} Punkte
           </span>
         </div>
         <div className="round-body">
@@ -329,7 +309,7 @@ function Banner({ children, color }: { children: any; color: string }) {
 function GuessPoints({ round }: { round: Round }) {
   const now = useNow(4);
   const stage = guessStage(round.timer, now);
-  const pts = Math.round(round.value * (round.double ? 2 : 1) * GUESS_FACTORS[stage - 1]);
+  const pts = Math.round(round.value * GUESS_FACTORS[stage - 1]);
   return (
     <div className="panel blue" style={{ textAlign: 'center', padding: '12px 24px' }}>
       <div style={{ fontSize: 30 }}>Stufe {stage}/4</div>

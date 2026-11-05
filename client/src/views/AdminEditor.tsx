@@ -4,15 +4,13 @@ import { modeInfo, MODE_ORDER } from '../modes';
 import { shrinkImage } from '../image';
 import type { Mode, View } from '../types';
 
-// ---------------------------------------------------------------- Typen der Spieldefinition
+// ---------------------------------------------------------------- Typen
 interface Entry {
   begriff?: string;
   verboten?: string[];
   kategorie?: string;
   datei?: string;
   loesung?: string;
-  fokusX?: number;
-  fokusY?: number;
   frage?: string;
   optionen?: string[];
   richtig?: number;
@@ -21,49 +19,26 @@ interface Suggestion {
   id: string;
   col: string;
   mode: Mode;
-  value: number | null;
   von: string;
   entry: Entry;
   at: number;
   status?: 'offen' | 'angenommen' | 'abgelehnt';
+  test?: boolean;
 }
 interface Def {
   rev: number;
   settings: Record<string, any>;
   columns: { id: string; mode: Mode; title: string }[];
-  values: number[];
-  entries: Record<string, Record<string, Entry[]>>;
 }
 
-const MAX_COLUMNS = 8;
-const MAX_ROWS = 8;
-const MODES: Mode[] = MODE_ORDER;
+const MAX_COLUMNS = 12;
 const randomId = () => Math.random().toString(36).slice(2, 10);
-
-function entryValid(mode: Mode, e: Entry) {
-  if (mode === 'tabu') return !!e.begriff && !!e.verboten?.length;
-  if (mode === 'guess') return !!e.datei && !!e.loesung;
-  if (mode === 'quiz') return !!e.frage && e.optionen?.length === 4 && e.optionen.every(Boolean);
-  return !!e.begriff;
-}
-function emptyEntry(mode: Mode): Entry {
-  if (mode === 'tabu') return { begriff: '', verboten: [] };
-  if (mode === 'guess') return { kategorie: 'Character', datei: '', loesung: '' };
-  if (mode === 'quiz') return { frage: '', optionen: ['', '', '', ''], richtig: 0 };
-  return { begriff: '' };
-}
-function preview(mode: Mode, e: Entry) {
-  if (mode === 'quiz') return e.frage || '';
-  if (mode === 'guess') return e.loesung || '';
-  return e.begriff || '';
-}
 
 // ---------------------------------------------------------------- Editor
 export default function Editor({ pin, view }: { pin: string; view: View }) {
   const [def, setDef] = useState<Def | null>(null);
   const [defaults, setDefaults] = useState<Record<string, any>>({});
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
-  const [sel, setSel] = useState<{ col: string; value: number } | null>(null);
   const [status, setStatus] = useState<'saved' | 'dirty' | 'saving' | 'error'>('saved');
   const [err, setErr] = useState<string | null>(null);
   const timer = useRef<number | undefined>(undefined);
@@ -71,17 +46,24 @@ export default function Editor({ pin, view }: { pin: string; view: View }) {
   const modes = modeInfo(view.bdayName);
   const started = view.phase !== 'lobby';
 
-  useEffect(() => {
+  const load = (withDef: boolean) =>
     fetch(`/api/game?def=1&pin=${encodeURIComponent(pin)}`, { cache: 'no-store' })
       .then((r) => r.json())
       .then((d) => {
         if (d.error) throw new Error(d.error);
-        setDef(d.def);
+        if (withDef) {
+          setDef(d.def);
+          const { adminPin, adminPinSource, ...rest } = d.defaults || {};
+          setDefaults(rest);
+        }
         setSuggestions(d.suggestions || []);
-        const { adminPin, adminPinSource, ...rest } = d.defaults || {};
-        setDefaults(rest);
-      })
-      .catch((e) => setErr(e.message));
+      });
+
+  useEffect(() => {
+    load(true).catch((e) => setErr(e.message));
+    // Vorschläge alle 15 Sekunden aktualisieren
+    const t = window.setInterval(() => load(false).catch(() => {}), 15000);
+    return () => clearInterval(t);
   }, [pin]);
 
   const save = async () => {
@@ -112,15 +94,6 @@ export default function Editor({ pin, view }: { pin: string; view: View }) {
   };
   useEffect(() => () => clearTimeout(timer.current), []);
   useEffect(() => {
-    const t = window.setInterval(() => {
-      fetch(`/api/game?def=1&pin=${encodeURIComponent(pin)}`, { cache: 'no-store' })
-        .then((r) => r.json())
-        .then((d) => d.suggestions && setSuggestions(d.suggestions))
-        .catch(() => {});
-    }, 15000);
-    return () => clearInterval(t);
-  }, [pin]);
-  useEffect(() => {
     const warn = (e: BeforeUnloadEvent) => {
       if (status === 'dirty' || status === 'saving') e.preventDefault();
     };
@@ -128,51 +101,38 @@ export default function Editor({ pin, view }: { pin: string; view: View }) {
     return () => window.removeEventListener('beforeunload', warn);
   }, [status]);
 
-  const deleteSuggestion = async (id: string) => {
-    if (!confirm('Vorschlag löschen?')) return;
+  const call = async (type: string, payload: any) => {
     try {
-      const res = await postAction({ role: 'admin', pin }, 'deleteSuggestion', { id });
-      setSuggestions(res.suggestions);
+      const res = await postAction({ role: 'admin', pin }, type, payload);
+      if (res.suggestions) setSuggestions(res.suggestions);
+      return res;
     } catch (e: any) {
       setErr(e.message);
     }
   };
-  const reviewSuggestion: Review = async (id, patch) => {
+  const deleteSuggestion = (id: string) => confirm('Vorschlag ganz löschen?') && call('deleteSuggestion', { id });
+  const reviewSuggestion: Review = (id, patch) => {
     setSuggestions((l) => l.map((x) => (x.id === id ? { ...x, ...patch } : x)));
-    try {
-      const res = await postAction({ role: 'admin', pin }, 'reviewSuggestion', { id, ...patch });
-      setSuggestions(res.suggestions);
-    } catch (e: any) {
-      setErr(e.message);
-    }
+    call('reviewSuggestion', { id, ...patch });
   };
-  const refreshSuggestions = () =>
-    fetch(`/api/game?def=1&pin=${encodeURIComponent(pin)}`, { cache: 'no-store' })
-      .then((r) => r.json())
-      .then((d) => d.suggestions && setSuggestions(d.suggestions))
-      .catch(() => {});
+  const deleteTest = () => confirm('Alle Testdaten löschen?') && call('deleteTestData', {});
 
   if (err && !def) return <div className="error">Spiel konnte nicht geladen werden: {err}</div>;
   if (!def) return <div className="panel">Lade Spiel …</div>;
 
   const cols = def.columns;
-  const list = (col: string, value: number) => def.entries[col]?.[String(value)] || [];
+  const countOf = (colId: string, st: string) => suggestions.filter((x) => x.col === colId && (x.status || 'offen') === st).length;
 
-  // ---------- Struktur
   const addColumn = () =>
     update((d) => {
-      const id = randomId();
-      d.columns.push({ id, mode: 'pantomime', title: 'Neue Spalte' });
-      d.entries[id] = Object.fromEntries(d.values.map((v) => [String(v), []]));
+      d.columns.push({ id: randomId(), mode: 'pantomime', title: 'Neue Kategorie' });
     });
   const removeColumn = (id: string) => {
-    const n = def.values.reduce((a, v) => a + list(id, v).length, 0);
-    if (!confirm(`Spalte „${cols.find((c) => c.id === id)?.title}“ löschen?${n ? ` Dabei gehen ${n} Einträge verloren.` : ''}`)) return;
+    const n = suggestions.filter((x) => x.col === id).length;
+    if (!confirm(`Kategorie „${cols.find((c) => c.id === id)?.title}“ löschen?${n ? ` Ihre ${n} Vorschläge werden dann nicht mehr gespielt.` : ''}`)) return;
     update((d) => {
       d.columns = d.columns.filter((c) => c.id !== id);
-      delete d.entries[id];
     });
-    if (sel?.col === id) setSel(null);
   };
   const moveColumn = (id: string, dir: -1 | 1) =>
     update((d) => {
@@ -182,45 +142,12 @@ export default function Editor({ pin, view }: { pin: string; view: View }) {
       [d.columns[i], d.columns[j]] = [d.columns[j], d.columns[i]];
     });
   const setMode = (id: string, mode: Mode) => {
-    const n = def.values.reduce((a, v) => a + list(id, v).length, 0);
-    if (n && !confirm('Spielmodus ändern? Bestehende Einträge bleiben, passen aber evtl. nicht zum neuen Modus (z.B. fehlen verbotene Wörter oder Bilder).')) return;
+    const n = suggestions.filter((x) => x.col === id).length;
+    if (n && !confirm('Spielmodus ändern? Vorhandene Vorschläge passen dann evtl. nicht mehr (z.B. fehlen Bilder oder verbotene Wörter).')) return;
     update((d) => {
-      const c = d.columns.find((x) => x.id === id)!;
-      c.mode = mode;
+      d.columns.find((x) => x.id === id)!.mode = mode;
     });
   };
-  const addRow = () =>
-    update((d) => {
-      const v = (Math.max(0, ...d.values) || 0) + 100;
-      d.values.push(v);
-      for (const c of d.columns) (d.entries[c.id] ||= {})[String(v)] = [];
-    });
-  const removeRow = (v: number) => {
-    const n = cols.reduce((a, c) => a + list(c.id, v).length, 0);
-    if (!confirm(`Zeile ${v} löschen?${n ? ` Dabei gehen ${n} Einträge verloren.` : ''}`)) return;
-    update((d) => {
-      d.values = d.values.filter((x) => x !== v);
-      for (const c of d.columns) delete d.entries[c.id]?.[String(v)];
-    });
-    if (sel?.value === v) setSel(null);
-  };
-  const changeValue = (oldV: number, raw: string) => {
-    const v = Math.round(Number(raw));
-    if (!(v > 0) || v === oldV) return;
-    if (def.values.includes(v)) return alert(`Den Wert ${v} gibt es schon.`);
-    update((d) => {
-      d.values = d.values.map((x) => (x === oldV ? v : x));
-      for (const c of d.columns) {
-        const e = (d.entries[c.id] ||= {});
-        e[String(v)] = e[String(oldV)] || [];
-        delete e[String(oldV)];
-      }
-    });
-    if (sel?.value === oldV) setSel({ ...sel, value: v });
-  };
-
-  const gridCols = `110px repeat(${cols.length}, minmax(150px, 1fr))${cols.length < MAX_COLUMNS ? ' 64px' : ''}`;
-  const selCol = sel && cols.find((c) => c.id === sel.col);
 
   return (
     <>
@@ -231,99 +158,64 @@ export default function Editor({ pin, view }: { pin: string; view: View }) {
           {status === 'saving' && '💾 Speichert …'}
           {status === 'error' && `❌ Nicht gespeichert: ${err}`}
         </div>
-        {started && <div className="hint">Das Spiel läuft: Neue Inhalte gelten ab dem nächsten Feld. Neue Felder sind sofort spielbar.</div>}
+        {started && <div className="hint">Das Spiel läuft: Neu angenommene Vorschläge sind sofort im Spiel.</div>}
       </div>
+      {err && def && status !== 'error' && <div className="error">{err}</div>}
 
-      <SuggestionsPanel pin={pin} def={def} suggestions={suggestions} bday={view.bdayName} onDelete={deleteSuggestion} onReview={reviewSuggestion} onRefresh={refreshSuggestions} open={def.settings.vorschlaegeOffen !== false} setOpen={(v) => update((d) => (v ? delete d.settings.vorschlaegeOffen : (d.settings.vorschlaegeOffen = false)))} />
-
-      <Settings def={def} defaults={defaults} update={update} pin={pin} />
+      <SuggestionsPanel
+        pin={pin}
+        def={def}
+        suggestions={suggestions}
+        bday={view.bdayName}
+        onDelete={deleteSuggestion}
+        onReview={reviewSuggestion}
+        onRefresh={() => load(false)}
+        onDeleteTest={deleteTest}
+        open={def.settings.vorschlaegeOffen !== false}
+        setOpen={(v) => update((d) => (v ? delete d.settings.vorschlaegeOffen : (d.settings.vorschlaegeOffen = false)))}
+      />
 
       <div className="panel">
-        <h2>Spielbrett</h2>
-        <p className="muted" style={{ margin: '0 0 10px', fontSize: 15 }}>
-          Spaltentitel und Modus oben ändern, Punktwerte links. Feld anklicken, um Begriffe, Fragen oder Bilder einzutragen. Rot = noch leer. {'{name}'} wird überall durch den Namen des Geburtstagskinds ersetzt.
+        <h2>Kategorien</h2>
+        <p className="muted" style={{ margin: '0 0 12px', fontSize: 15 }}>
+          Titel und Spielmodus frei wählbar. Die Person am Zug wählt eine Kategorie, daraus wird zufällig ein angenommener Vorschlag gezogen. {'{name}'} wird durch den Namen des Geburtstagskinds ersetzt.
         </p>
-        <div style={{ overflowX: 'auto' }}>
-          <div className="ed-grid" style={{ gridTemplateColumns: gridCols, minWidth: 110 + cols.length * 158 }}>
-            <div className="ed-row" style={{ fontWeight: 800, opacity: 0.8 }}>
-              Punkte
-            </div>
-            {cols.map((c, i) => (
-              <div key={c.id} className="ed-head" style={{ '--mc': modes[c.mode].color } as any}>
-                <input value={c.title} maxLength={40} onChange={(e) => update((d) => (d.columns.find((x) => x.id === c.id)!.title = e.target.value))} placeholder="Spaltentitel" />
-                <select value={c.mode} onChange={(e) => setMode(c.id, e.target.value as Mode)}>
-                  {MODES.map((m) => (
-                    <option key={m} value={m}>
-                      {modeInfo('…')[m].label.replace('Wer kennt …?', 'Quiz (Wer kennt …?)')}
-                    </option>
-                  ))}
-                </select>
-                <div className="tools">
-                  <button title="Nach links" disabled={i === 0} onClick={() => moveColumn(c.id, -1)}>
-                    ◀
-                  </button>
-                  <button title="Spalte löschen" disabled={cols.length <= 1} onClick={() => removeColumn(c.id)}>
-                    ✕
-                  </button>
-                  <button title="Nach rechts" disabled={i === cols.length - 1} onClick={() => moveColumn(c.id, 1)}>
-                    ▶
-                  </button>
-                </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))', gap: 12 }}>
+          {cols.map((c, i) => (
+            <div key={c.id} className="ed-head" style={{ '--mc': modes[c.mode].color, padding: 12 } as any}>
+              <input value={c.title} maxLength={40} onChange={(e) => update((d) => (d.columns.find((x) => x.id === c.id)!.title = e.target.value))} placeholder="Titel" />
+              <select value={c.mode} onChange={(e) => setMode(c.id, e.target.value as Mode)}>
+                {MODE_ORDER.map((m) => (
+                  <option key={m} value={m}>
+                    {modeInfo('…')[m].icon} {modeInfo('…')[m].label.replace('Wer kennt …?', 'Quiz über das Geburtstagskind')}
+                  </option>
+                ))}
+              </select>
+              <div style={{ fontSize: 14, fontWeight: 800 }}>
+                👍 {countOf(c.id, 'angenommen')} angenommen · 🕓 {countOf(c.id, 'offen')} offen
               </div>
-            ))}
-            {cols.length < MAX_COLUMNS && (
-              <button className="ed-add" title="Spalte hinzufügen" onClick={addColumn}>
-                + Spalte
-              </button>
-            )}
-
-            {def.values.map((v) => (
-              <RowCells
-                key={v}
-                v={v}
-                def={def}
-                sel={sel}
-                setSel={setSel}
-                changeValue={changeValue}
-                removeRow={removeRow}
-                canRemove={def.values.length > 1}
-                extraCol={cols.length < MAX_COLUMNS}
-                bday={view.bdayName}
-                suggestions={suggestions}
-              />
-            ))}
-          </div>
+              <div className="tools">
+                <button title="Nach vorne" disabled={i === 0} onClick={() => moveColumn(c.id, -1)}>
+                  ◀
+                </button>
+                <button title="Kategorie löschen" disabled={cols.length <= 1} onClick={() => removeColumn(c.id)}>
+                  ✕
+                </button>
+                <button title="Nach hinten" disabled={i === cols.length - 1} onClick={() => moveColumn(c.id, 1)}>
+                  ▶
+                </button>
+              </div>
+            </div>
+          ))}
+          {cols.length < MAX_COLUMNS && (
+            <button className="ed-add" style={{ minHeight: 150 }} onClick={addColumn}>
+              + Kategorie
+            </button>
+          )}
         </div>
-        {def.values.length < MAX_ROWS && (
-          <button className="ed-add" style={{ marginTop: 8, width: 110 }} onClick={addRow}>
-            + Zeile
-          </button>
-        )}
       </div>
 
-      {sel && selCol && (
-        <CellEditor
-          key={sel.col + sel.value}
-          pin={pin}
-          mode={selCol.mode}
-          title={`${selCol.title.replace('{name}', view.bdayName)} · ${sel.value}`}
-          entries={list(sel.col, sel.value)}
-          suggestions={suggestions.filter((x) => x.status === 'angenommen' && x.col === sel.col && (x.value == null || x.value === sel.value))}
-          onDeleteSuggestion={deleteSuggestion}
-          onReview={reviewSuggestion}
-          def={def}
-          bday={view.bdayName}
-          color={modes[selCol.mode].color}
-          rule={modes[selCol.mode].rule}
-          onChange={(fn) =>
-            update((d) => {
-              const e = ((d.entries[sel.col] ||= {})[String(sel.value)] ||= []);
-              fn(e);
-            })
-          }
-          onClose={() => setSel(null)}
-        />
-      )}
+      <Settings def={def} defaults={defaults} update={update} pin={pin} />
 
       <div className="panel dark">
         <h2>Sicherung</h2>
@@ -331,65 +223,30 @@ export default function Editor({ pin, view }: { pin: string; view: View }) {
           <button
             className="btn small ghost"
             onClick={() => {
-              const blob = new Blob([JSON.stringify(def, null, 2)], { type: 'application/json' });
+              const blob = new Blob([JSON.stringify({ def, suggestions }, null, 2)], { type: 'application/json' });
               const a = document.createElement('a');
               a.href = URL.createObjectURL(blob);
               a.download = 'spiel-backup.json';
               a.click();
             }}
           >
-            ⬇️ Spiel als Datei sichern
+            ⬇️ Kategorien und Vorschläge als Datei sichern
           </button>
           <button
-            className="btn small red"
+            className="btn small ghost"
             onClick={async () => {
-              if (!confirm('Alle Spalten, Zeilen und Inhalte durch die Startinhalte aus content/content.json ersetzen? Deine Änderungen hier gehen verloren.')) return;
-              try {
-                const res = await postAction({ role: 'admin', pin }, 'resetDef');
+              if (!confirm('Kategorien auf die 7 Standard-Kategorien zurücksetzen? Vorschläge und Einstellungen bleiben.')) return;
+              const res = await call('resetDef', {});
+              if (res?.def) {
                 setDef(res.def);
                 latest.current = res.def;
-                setSel(null);
-              } catch (e: any) {
-                setErr(e.message);
               }
             }}
           >
-            ↺ Startinhalte aus content.json laden
+            ↺ Standard-Kategorien wiederherstellen
           </button>
         </div>
       </div>
-    </>
-  );
-}
-
-function RowCells({ v, def, sel, setSel, changeValue, removeRow, canRemove, extraCol, bday, suggestions }: any) {
-  const [val, setVal] = useState(String(v));
-  useEffect(() => setVal(String(v)), [v]);
-  return (
-    <>
-      <div className="ed-row">
-        <input inputMode="numeric" value={val} onChange={(e) => setVal(e.target.value.replace(/\D/g, ''))} onBlur={() => (changeValue(v, val), setVal(String(v)))} onKeyDown={(e) => e.key === 'Enter' && (e.target as HTMLInputElement).blur()} />
-        <button className="x" disabled={!canRemove} title="Zeile löschen" onClick={() => removeRow(v)}>
-          ✕
-        </button>
-      </div>
-      {def.columns.map((c: Def['columns'][number]) => {
-        const items: Entry[] = def.entries[c.id]?.[String(v)] || [];
-        const valid = items.filter((e) => entryValid(c.mode, e));
-        const sugg = (suggestions as Suggestion[]).filter((x) => x.status === 'angenommen' && x.col === c.id && (x.value == null || x.value === v));
-        const isSel = sel?.col === c.id && sel?.value === v;
-        return (
-          <button key={c.id} className={`ed-cell ${valid.length || sugg.length ? '' : 'empty'} ${isSel ? 'sel' : ''}`} onClick={() => setSel(isSel ? null : { col: c.id, value: v })}>
-            <span className="prev">{valid.length ? preview(c.mode, valid[0]).replaceAll('{name}', bday) : sugg.length ? '💡 nur Vorschläge' : 'leer – antippen'}</span>
-            <span className="cnt">
-              {valid.length} {valid.length === 1 ? 'Eintrag' : 'Einträge'}
-              {sugg.length ? ` · 💡 ${sugg.length}` : ''}
-              {items.length > valid.length ? ` · ${items.length - valid.length} unvollständig` : ''}
-            </span>
-          </button>
-        );
-      })}
-      {extraCol && <div />}
     </>
   );
 }
@@ -425,8 +282,8 @@ function Settings({ def, defaults, update, pin }: { def: Def; defaults: Record<s
             <input className="input" inputMode="numeric" value={val('rundendauerSekunden')} placeholder={String(defaults.rundendauerSekunden ?? 60)} onChange={(e) => set('rundendauerSekunden', e.target.value.replace(/\D/g, '') ? Number(e.target.value.replace(/\D/g, '')) : '')} />
           </label>
           <label>
-            Anzahl Doppelt-Felder
-            <input className="input" inputMode="numeric" value={val('anzahlDoppeltFelder')} placeholder={String(defaults.anzahlDoppeltFelder ?? 2)} onChange={(e) => set('anzahlDoppeltFelder', e.target.value.replace(/\D/g, '') !== '' ? Number(e.target.value.replace(/\D/g, '')) : '')} />
+            Punkte pro richtige Antwort
+            <input className="input" inputMode="numeric" value={val('punkteProRunde')} placeholder={String(defaults.punkteProRunde ?? 100)} onChange={(e) => set('punkteProRunde', e.target.value.replace(/\D/g, '') ? Number(e.target.value.replace(/\D/g, '')) : '')} />
           </label>
           <label>
             Klauen
@@ -457,7 +314,7 @@ function Settings({ def, defaults, update, pin }: { def: Def; defaults: Record<s
             />
           </div>
           <p className="muted" style={{ gridColumn: '1 / -1', fontSize: 14, margin: 0 }}>
-            Leere Felder = Standardwert aus config.json (grau angezeigt). Doppelt-Felder werden beim Spielstart neu verteilt.
+            Leere Felder = Standardwert aus config.json (grau angezeigt). Bei Bildern gibt es einen Bonus je früher erraten: doppelte, 1,5-fache, 1,25-fache oder einfache Punktzahl. Klauen gibt die Hälfte.
           </p>
         </div>
       )}
@@ -465,51 +322,8 @@ function Settings({ def, defaults, update, pin }: { def: Def; defaults: Record<s
   );
 }
 
-// ---------------------------------------------------------------- Feld-Inhalte
-function CellEditor({ pin, mode, title, entries, suggestions, onDeleteSuggestion, onReview, def, bday, color, rule, onChange, onClose }: { pin: string; mode: Mode; title: string; entries: Entry[]; suggestions: Suggestion[]; onDeleteSuggestion: (id: string) => void; onReview: Review; def: Def; bday: string; color: string; rule: string; onChange: (fn: (list: Entry[]) => void) => void; onClose: () => void }) {
-  return (
-    <div className="panel" style={{ borderTop: `8px solid ${color}` }}>
-      <div className="row" style={{ justifyContent: 'space-between' }}>
-        <h2 style={{ margin: 0 }}>{title}</h2>
-        <button className="btn small ghost" onClick={onClose}>
-          Schliessen
-        </button>
-      </div>
-      <p className="muted" style={{ fontSize: 15 }}>
-        {rule} Pro Feld wird zufällig ein noch nicht gespielter Eintrag gezogen. Du kannst also mehr Einträge anlegen, als nötig sind.
-      </p>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 12 }}>
-        {entries.map((e, i) => (
-          <EntryForm
-            key={`${entries.length}-${i}`}
-            pin={pin}
-            mode={mode}
-            entry={e}
-            index={i}
-            onChange={(patch) => onChange((l) => (l[i] = { ...l[i], ...patch }))}
-            onDelete={() => confirm('Eintrag löschen?') && onChange((l) => l.splice(i, 1))}
-          />
-        ))}
-        <button className="ed-add" style={{ minHeight: 120 }} onClick={() => onChange((l) => l.push(emptyEntry(mode)))}>
-          + Eintrag hinzufügen
-        </button>
-      </div>
-      {suggestions.length > 0 && (
-        <>
-          <h3 style={{ marginBottom: 6 }}>💡 Angenommene Vorschläge, die hier gezogen werden können ({suggestions.length})</h3>
-          <p className="muted" style={{ fontSize: 14, marginTop: 0 }}>Werden mitgezogen, aber nie beim Team der Person, die sie eingereicht hat.</p>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: 12 }}>
-            {suggestions.map((x) => (
-              <SuggestionCard key={x.id} s={x} pin={pin} def={def} bday={bday} onDelete={() => onDeleteSuggestion(x.id)} onReview={onReview} />
-            ))}
-          </div>
-        </>
-      )}
-    </div>
-  );
-}
-
-type Review = (id: string, patch: { status?: Suggestion['status']; value?: number | null }) => void;
+// ---------------------------------------------------------------- Vorschläge
+type Review = (id: string, patch: { status?: Suggestion['status'] }) => void;
 
 function SuggestionCard({ s, pin, def, bday, onDelete, onReview }: { s: Suggestion; pin: string; def: Def; bday: string; onDelete: () => void; onReview: Review }) {
   const e = s.entry;
@@ -559,17 +373,7 @@ function SuggestionCard({ s, pin, def, bday, onDelete, onReview }: { s: Suggesti
         </button>
       </div>
       <div className="row" style={{ justifyContent: 'space-between' }}>
-        <label style={{ display: 'flex', alignItems: 'center', gap: 6, textTransform: 'none', fontSize: 14 }}>
-          Punkte:
-          <select value={s.value == null ? '' : String(s.value)} onChange={(ev) => onReview(s.id, { value: ev.target.value ? Number(ev.target.value) : null })} style={{ fontSize: 14, borderRadius: 8, padding: '4px 6px' }}>
-            <option value="">alle Felder der Spalte</option>
-            {def.values.map((v) => (
-              <option key={v} value={v}>
-                nur {v}
-              </option>
-            ))}
-          </select>
-        </label>
+        <span className="muted" style={{ fontSize: 13 }}>{s.test ? '🧪 Testdaten' : ''}</span>
         <button className="btn small ghost" onClick={onDelete} title="Ganz löschen">
           🗑️
         </button>
@@ -578,7 +382,7 @@ function SuggestionCard({ s, pin, def, bday, onDelete, onReview }: { s: Suggesti
   );
 }
 
-function SuggestionsPanel({ pin, def, suggestions, bday, onDelete, onReview, onRefresh, open, setOpen }: { pin: string; def: Def; suggestions: Suggestion[]; bday: string; onDelete: (id: string) => void; onReview: Review; onRefresh: () => void; open: boolean; setOpen: (v: boolean) => void }) {
+function SuggestionsPanel({ pin, def, suggestions, bday, onDelete, onReview, onRefresh, onDeleteTest, open, setOpen }: { pin: string; def: Def; suggestions: Suggestion[]; bday: string; onDelete: (id: string) => void; onReview: Review; onRefresh: () => void; onDeleteTest: () => void; open: boolean; setOpen: (v: boolean) => void }) {
   const [filter, setFilter] = useState<'offen' | 'angenommen' | 'abgelehnt'>('offen');
   const url = `${location.origin}/vorschlag`;
   const count = (st: string) => suggestions.filter((x) => (x.status || 'offen') === st).length;
@@ -589,9 +393,16 @@ function SuggestionsPanel({ pin, def, suggestions, bday, onDelete, onReview, onR
         <h2 style={{ margin: 0 }}>
           💡 Vorschläge von Gästen {count('offen') > 0 && <span className="badge" style={{ background: '#FFCB2D', color: '#2A1E5C' }}>{count('offen')} neu</span>}
         </h2>
-        <button className="btn small ghost" onClick={onRefresh}>
-          ↻ Aktualisieren
-        </button>
+        <div className="row">
+          {suggestions.some((x) => x.test) && (
+            <button className="btn small ghost" onClick={onDeleteTest}>
+              🧪 Testdaten löschen
+            </button>
+          )}
+          <button className="btn small ghost" onClick={onRefresh}>
+            ↻ Aktualisieren
+          </button>
+        </div>
       </div>
       <p style={{ fontSize: 16, margin: '10px 0' }}>
         Link für Gäste: <b style={{ userSelect: 'all' }}>{url}</b>{' '}
@@ -604,7 +415,7 @@ function SuggestionsPanel({ pin, def, suggestions, bday, onDelete, onReview, onR
         Neue Vorschläge annehmen (Seite offen)
       </label>
       <p className="muted" style={{ fontSize: 14 }}>
-        Nur 👍 angenommene Vorschläge kommen ins Spiel. Ohne festen Punktwert kann ein Vorschlag in jedem Feld seiner Spalte gezogen werden, aber nur einmal pro Spiel. Er kommt nie beim Team der Person dran, die ihn eingereicht hat.
+        Nur 👍 angenommene Vorschläge kommen ins Spiel. Wählt die Person am Zug eine Kategorie, wird daraus zufällig ein Vorschlag gezogen, jeder nur einmal pro Spiel. Er kommt nie beim Team der Person dran, die ihn eingereicht hat.
       </p>
       <div className="tabs" style={{ marginBottom: 12 }}>
         {(['offen', 'angenommen', 'abgelehnt'] as const).map((f) => (
@@ -619,88 +430,6 @@ function SuggestionsPanel({ pin, def, suggestions, bday, onDelete, onReview, onR
           <SuggestionCard key={x.id} s={x} pin={pin} def={def} bday={bday} onDelete={() => onDelete(x.id)} onReview={onReview} />
         ))}
       </div>
-    </div>
-  );
-}
-
-function ListInput({ value, onChange, placeholder }: { value: string[]; onChange: (v: string[]) => void; placeholder?: string }) {
-  const [text, setText] = useState(value.join(', '));
-  return (
-    <input
-      className="input"
-      value={text}
-      placeholder={placeholder}
-      onChange={(e) => {
-        setText(e.target.value);
-        onChange(e.target.value.split(',').map((x) => x.trim()).filter(Boolean));
-      }}
-    />
-  );
-}
-
-function EntryForm({ pin, mode, entry, index, onChange, onDelete }: { pin: string; mode: Mode; entry: Entry; index: number; onChange: (p: Partial<Entry>) => void; onDelete: () => void }) {
-  const ok = entryValid(mode, entry);
-  return (
-    <div className="entry-card" style={{ outline: ok ? undefined : '2px dashed rgba(255,77,94,.8)' }}>
-      <div className="row" style={{ justifyContent: 'space-between' }}>
-        <b>
-          #{index + 1} {ok ? '' : <span style={{ color: '#FFB3BB' }}>unvollständig</span>}
-        </b>
-        <button className="btn small red" onClick={onDelete}>
-          Löschen
-        </button>
-      </div>
-      {['pantomime', 'tabu', 'malen', 'emoji', 'summen'].includes(mode) && (
-        <>
-          <label>{mode === 'emoji' ? 'Begriff (z.B. Filmtitel)' : mode === 'summen' ? 'Song (Titel – Interpret)' : 'Begriff'}</label>
-          <input className="input" value={entry.begriff || ''} onChange={(e) => onChange({ begriff: e.target.value })} />
-        </>
-      )}
-      {mode === 'tabu' && (
-        <>
-          <label>Verbotene Wörter (mit Komma trennen)</label>
-          <ListInput value={entry.verboten || []} onChange={(v) => onChange({ verboten: v })} placeholder="z.B. trinken, Bohne, Tasse" />
-        </>
-      )}
-      {mode === 'guess' && (
-        <>
-          <label>Kategorie („Guess the …“)</label>
-          <input className="input" value={entry.kategorie || ''} placeholder="Character, Film, Ort …" onChange={(e) => onChange({ kategorie: e.target.value })} />
-          <label>Lösung</label>
-          <input className="input" value={entry.loesung || ''} onChange={(e) => onChange({ loesung: e.target.value })} />
-          <ImageField
-            label="Bild – danach ins Bild klicken, wo der erste kleine Ausschnitt liegen soll"
-            pin={pin}
-            datei={entry.datei || ''}
-            focus={entry.fokusX !== undefined && entry.fokusY !== undefined ? { x: entry.fokusX, y: entry.fokusY } : null}
-            onFocus={(x, y) => onChange({ fokusX: x, fokusY: y })}
-            onChange={(datei) => onChange({ datei, fokusX: undefined, fokusY: undefined })}
-          />
-        </>
-      )}
-      {mode === 'quiz' && (
-        <>
-          <label>Frage ({'{name}'} = Name des Geburtstagskinds)</label>
-          <input className="input" value={entry.frage || ''} onChange={(e) => onChange({ frage: e.target.value })} />
-          <label>Antworten (richtige anklicken)</label>
-          {[0, 1, 2, 3].map((i) => (
-            <div key={i} className="row" style={{ flexWrap: 'nowrap' }}>
-              <input type="radio" name={`richtig-${index}`} checked={entry.richtig === i} onChange={() => onChange({ richtig: i })} style={{ width: 24, height: 24, flex: 'none' }} />
-              <input
-                className="input"
-                value={entry.optionen?.[i] || ''}
-                placeholder={`Antwort ${'ABCD'[i]}`}
-                style={{ borderColor: entry.richtig === i ? '#3DDC84' : undefined }}
-                onChange={(e) => {
-                  const o = [...(entry.optionen || ['', '', '', ''])];
-                  o[i] = e.target.value;
-                  onChange({ optionen: o });
-                }}
-              />
-            </div>
-          ))}
-        </>
-      )}
     </div>
   );
 }

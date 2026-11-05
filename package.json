@@ -11,7 +11,6 @@
     "start": "npm run build && node server/index.js",
     "build": "node scripts/validate.js && vite build",
     "dev": "node --watch-path=server --watch-path=lib server/index.js --dev",
-    "import": "node scripts/import-csv.js",
     "validate": "node scripts/validate.js",
     "typecheck": "tsc --noEmit -p client"
   },

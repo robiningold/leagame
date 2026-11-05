@@ -15,7 +15,7 @@
   "rundendauerSekunden": 60,
   "klauenDauerSekunden": 10,
   "klauen": true,
-  "anzahlDoppeltFelder": 2,
   "aufloesungSekunden": 8,
-  "finaltext": "Alles Gute zum Geburtstag, liebe Lea! 🎉 Danke, dass wir mit dir feiern dürfen. Auf ein grossartiges neues Lebensjahr!"
+  "finaltext": "Alles Gute zum Geburtstag, liebe Lea! 🎉 Danke, dass wir mit dir feiern dürfen. Auf ein grossartiges neues Lebensjahr!",
+  "punkteProRunde": 100
 }

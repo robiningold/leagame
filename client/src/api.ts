@@ -139,4 +139,5 @@ export function guessStage(t: { durMs: number; endsAt: number | null; remainingM
   return Math.min(4, Math.floor(elapsed / (t.durMs / 4)) + 1);
 }
 
-export const GUESS_FACTORS = [1, 0.75, 0.5, 0.25];
+// Bild-Runde: Bonus je früher erraten (Faktor auf die Grundpunkte)
+export const GUESS_FACTORS = [2, 1.5, 1.25, 1];
