@@ -44,9 +44,9 @@ function Login({ onOk }: { onOk: (pin: string) => void }) {
           {info && (
             <div className="hint" style={{ fontSize: 15 }}>
               {info.source === 'env'
-                ? '🔑 Es gilt die PIN aus der Vercel-Variable ADMIN_PIN.'
+                ? '🔑 Es gilt die PIN aus der Vercel-Variable (ADMIN_PIN bzw. ADMIN_KEY).'
                 : info.vercel
-                  ? '⚠️ ADMIN_PIN ist auf Vercel (noch) nicht aktiv – es gilt die PIN aus config.json (Standard 1234). Variable in Vercel setzen und danach unter Deployments „Redeploy“ ausführen.'
+                  ? '⚠️ ADMIN_PIN / ADMIN_KEY ist auf Vercel (noch) nicht aktiv – es gilt die PIN aus config.json (Standard 1234). Variable in Vercel setzen und danach unter Deployments „Redeploy“ ausführen.'
                   : '🔑 Es gilt die PIN aus config.json (Feld adminPin).'}
             </div>
           )}

@@ -112,7 +112,7 @@ Die alte `content.json` wird als `content.json.bak` gesichert. Bei Fehlern wird 
 
 ## Admin-PIN festlegen
 
-- **Auf Vercel:** Im Vercel-Projekt unter **Settings → Environment Variables** die Variable `ADMIN_PIN` anlegen oder bearbeiten (für Production, Preview und Development). Danach unter **Deployments** beim neuesten Deploy **⋯ → Redeploy** klicken. Erst dann gilt die neue PIN, denn Vercel übernimmt geänderte Variablen nur bei einem neuen Deploy.
+- **Auf Vercel:** Im Vercel-Projekt unter **Settings → Environment Variables** die Variable `ADMIN_PIN` (oder `ADMIN_KEY`) anlegen oder bearbeiten (für Production, Preview und Development). Danach unter **Deployments** beim neuesten Deploy **⋯ → Redeploy** klicken. Erst dann gilt die neue PIN, denn Vercel übernimmt geänderte Variablen nur bei einem neuen Deploy.
 - **Lokal:** In `config.json` das Feld `adminPin` ändern und neu starten.
 - Ist `ADMIN_PIN` gesetzt, gilt diese PIN, und `adminPin` in `config.json` wird ignoriert.
 
