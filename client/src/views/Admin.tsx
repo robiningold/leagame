@@ -15,10 +15,17 @@ export default function Admin() {
 function Login({ onOk }: { onOk: (pin: string) => void }) {
   const [pin, setPin] = useState('');
   const [err, setErr] = useState<string | null>(null);
+  const [info, setInfo] = useState<{ source: 'env' | 'config'; vercel: boolean; storage: string } | null>(null);
+  useEffect(() => {
+    fetch('/api/game?pininfo=1', { cache: 'no-store' })
+      .then((r) => r.json())
+      .then(setInfo)
+      .catch(() => setErr('Server nicht erreichbar.'));
+  }, []);
   const go = async () => {
     try {
-      await postAction({ role: 'admin', pin }, 'adminLogin');
-      onOk(pin);
+      await postAction({ role: 'admin', pin: pin.trim() }, 'adminLogin');
+      onOk(pin.trim());
     } catch (e: any) {
       setErr(e.message);
     }
@@ -34,6 +41,15 @@ function Login({ onOk }: { onOk: (pin: string) => void }) {
           <button className="btn big" onClick={go}>
             Anmelden
           </button>
+          {info && (
+            <div className="hint" style={{ fontSize: 15 }}>
+              {info.source === 'env'
+                ? '🔑 Es gilt die PIN aus der Vercel-Variable ADMIN_PIN.'
+                : info.vercel
+                  ? '⚠️ ADMIN_PIN ist auf Vercel (noch) nicht aktiv – es gilt die PIN aus config.json (Standard 1234). Variable in Vercel setzen und danach unter Deployments „Redeploy“ ausführen.'
+                  : '🔑 Es gilt die PIN aus config.json (Feld adminPin).'}
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -64,7 +80,21 @@ function AdminPanel({ pin, onLogout }: { pin: string; onLogout: () => void }) {
   useEffect(() => {
     if (error === 'Falsche Admin-PIN.') onLogout();
   }, [error]);
-  if (!view) return <div className="admin">Lade …</div>;
+  if (!view)
+    return (
+      <div className="admin">
+        {error && error !== 'Falsche Admin-PIN.' ? (
+          <>
+            <div className="error">Fehler vom Server: {error}</div>
+            <button className="btn small ghost" onClick={onLogout}>
+              Zurück zur Anmeldung
+            </button>
+          </>
+        ) : (
+          'Lade …'
+        )}
+      </div>
+    );
 
   const r = view.round;
   const needResume = view.gameId !== resumeOk && (view.started || view.players.some((p) => !p.fake)) && view.phase !== 'final';
