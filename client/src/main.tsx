@@ -8,6 +8,7 @@ import './styles.css';
 import Tv from './views/Tv';
 import Join from './views/Join';
 import Admin from './views/Admin';
+import Suggest from './views/Suggest';
 import { Background } from './components';
 
 function Home() {
@@ -21,6 +22,9 @@ function Home() {
         <a className="btn big" href="/join">
           📱 Mitspielen
         </a>
+        <a className="btn big ghost" href="/vorschlag">
+          💡 Vorschläge einreichen
+        </a>
         <a className="btn big ghost" href="/tv">
           📺 TV-Ansicht
         </a>
@@ -33,8 +37,8 @@ function Home() {
 }
 
 const path = location.pathname.replace(/\/+$/, '');
-const titles: Record<string, string> = { '/tv': 'TV', '/join': 'Mitspielen', '/admin': 'Spielleitung' };
+const titles: Record<string, string> = { '/tv': 'TV', '/join': 'Mitspielen', '/admin': 'Spielleitung', '/vorschlag': 'Vorschläge' };
 document.title = `${titles[path] ?? 'Start'} · Partyspiel`;
-const Page = path === '/tv' ? Tv : path === '/join' ? Join : path === '/admin' ? Admin : Home;
+const Page = path === '/tv' ? Tv : path === '/join' ? Join : path === '/admin' ? Admin : path === '/vorschlag' ? Suggest : Home;
 
 createRoot(document.getElementById('root')!).render(<Page />);

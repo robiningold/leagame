@@ -226,6 +226,9 @@ function LobbyWait({ view, wakeLockSupported, run }: { view: View; wakeLockSuppo
       </div>
       <TeamNameEdit current={team?.name || ''} onSave={(name) => run('renameTeam', { teamId: me.teamId, name })} />
       <p className="muted">Warte, bis die Spielleitung das Spiel startet.</p>
+      <a className="btn ghost" href="/vorschlag" target="_blank" rel="noreferrer">
+        💡 Begriffe, Songs oder Bilder vorschlagen
+      </a>
       {!wakeLockSupported && <div className="hint">Tipp: Stell die automatische Bildschirmsperre für heute Abend aus, dann bleibst du immer verbunden.</div>}
     </div>
   );
@@ -473,7 +476,7 @@ function PlayerRound({ view, round, run }: { view: View; round: Round; run: (t: 
         <div className="panel blue" style={{ textAlign: 'center', padding: 40 }}>
           <div style={{ fontSize: 80 }}>📣</div>
           <h1 style={{ fontSize: 48 }}>{round.stage === 'ready' ? `${active?.name} macht sich bereit …` : 'Rate laut!'}</h1>
-          {round.mode !== 'guess' && <p>{active?.name} {round.mode === 'tabu' ? 'erklärt' : round.mode === 'malen' ? 'malt' : round.mode === 'emoji' ? 'tippt Emojis' : 'spielt vor'}.</p>}
+          {round.mode !== 'guess' && <p>{active?.name} {round.mode === 'tabu' ? 'erklärt' : round.mode === 'malen' ? 'malt' : round.mode === 'emoji' ? 'tippt Emojis' : round.mode === 'summen' ? 'summt einen Song' : 'spielt vor'}.</p>}
         </div>
       </>
     );

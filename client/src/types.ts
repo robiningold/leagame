@@ -1,4 +1,4 @@
-export type Mode = 'pantomime' | 'tabu' | 'malen' | 'emoji' | 'guess' | 'quiz';
+export type Mode = 'pantomime' | 'tabu' | 'malen' | 'emoji' | 'guess' | 'quiz' | 'summen';
 export type Role = 'tv' | 'admin' | 'player';
 
 export interface Team {
@@ -50,6 +50,7 @@ export interface RevealInfo {
   frage: string | null;
   optionen: string[] | null;
   richtig: number | null;
+  von?: string | null;
 }
 export interface Round {
   id: string;

@@ -81,6 +81,17 @@ Alles ist offline lauffähig: Schrift (Nunito) und QR-Code sind eingebaut, Sound
 
 Der Tab **„🎮 Live-Steuerung“** ist für den Abend: Spiel starten, Geburtstagskind markieren, Regelverstösse und Klauen entscheiden, Punkte korrigieren, Personen verschieben. Wartet im Spiel eine Entscheidung, erscheint im Bearbeiten-Tab ein roter Hinweis.
 
+## Vorschläge von Gästen
+
+Unter **`/vorschlag`** können Gäste schon vor dem Spiel Begriffe, Songs, Bilder und Quizfragen einreichen. Den Link findest du im Admin-Tool unter „💡 Vorschläge von Gästen“, auf der Startseite und in der Lobby auf dem Handy.
+
+- Man gibt den eigenen Namen ein, wählt Kategorie und Schwierigkeit und füllt die passenden Felder aus.
+- Vorschläge kommen direkt ins Spiel und werden wie normale Einträge zufällig gezogen.
+- **Fairness:** Ein Vorschlag kommt nie beim Team der Person dran, die ihn eingereicht hat. Wenn möglich auch nicht beim Team, das gerade klauen dürfte (bei nur 2 Teams wäre der Vorschlag sonst nie spielbar). Erkannt wird das am Namen, darum sollen Gäste denselben Namen wie beim Mitspielen eingeben. Gross/Klein und Leerzeichen sind egal.
+- Gibt es für ein Feld nur Vorschläge aus dem Team, das dran ist, meldet das Spiel das und man wählt ein anderes Feld.
+- Im Admin-Tool siehst du alle Vorschläge mit Namen, kannst sie löschen und die Seite mit „Vorschläge annehmen“ schliessen. Im Brett zeigt 💡 die Anzahl pro Feld.
+- Für Songs gibt es den Spielmodus **„Song summen“**: Lege im Admin-Tool eine Spalte mit diesem Modus an.
+
 ## Startinhalte im Repo (optional)
 
 Beim allerersten Start wird das Spiel aus **`content/content.json`** (Inhalte) und **`content/images/`** (Bilder) erzeugt. Danach bearbeitest du alles im Admin-Tool. Die Dateien brauchst du nur noch, wenn du Inhalte lieber in Excel vorbereitest und dann im Admin-Tool „Startinhalte aus content.json laden“ klickst.

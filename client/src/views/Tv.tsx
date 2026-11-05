@@ -413,11 +413,11 @@ function RoundContent({ view, round }: { view: View; round: Round }) {
     default:
       return (
         <div className="round-main">
-          <div className="big-text">{round.mode === 'tabu' ? `${active?.name} erklärt` : `${active?.name} spielt vor`}</div>
+          <div className="big-text">{round.mode === 'tabu' ? `${active?.name} erklärt` : round.mode === 'summen' ? `${active?.name} summt` : `${active?.name} spielt vor`}</div>
           <div className="mid-text" style={{ color: team?.farbe }}>
             {team?.name}: Rate laut!
           </div>
-          <div style={{ fontSize: 120 }}>{round.mode === 'tabu' ? '🗣️' : '🙊'}</div>
+          <div style={{ fontSize: 120 }}>{round.mode === 'tabu' ? '🗣️' : round.mode === 'summen' ? '🎵' : '🙊'}</div>
         </div>
       );
   }
@@ -458,6 +458,7 @@ function Reveal({ view, round }: { view: View; round: Round }) {
         </div>
       )}
       {round.mode === 'tabu' && info.verboten && <div style={{ fontSize: 34 }} className="muted">Verboten: {info.verboten.join(' · ')}</div>}
+      {info.von && <div style={{ fontSize: 34 }} className="muted">💡 Vorschlag von {info.von}</div>}
       <div className="result-badge" style={{ background: ok ? winner?.farbe : 'rgba(42,30,92,.6)' }}>
         {ok ? `${HOW_TEXT[r.how]} +${r.points} für ${winner?.name}` : `${HOW_TEXT[r.how]}${r.stealFailed ? ' – auch Klauen ging daneben' : ''} – keine Punkte`}
       </div>
